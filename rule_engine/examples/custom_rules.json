@@ -1,0 +1,32 @@
+[
+  {
+    "id": "custom_webapp_1",
+    "service": "webapp",
+    "pattern": "MyWebApp[/\\s]+v(\\d+\\.\\d+)",
+    "product": "My Web Application",
+    "version": "$1",
+    "confidence": 85,
+    "description": "Custom web application detection",
+    "author": "user"
+  },
+  {
+    "id": "custom_api_1", 
+    "service": "api",
+    "pattern": "API-Server[/\\s]+(\\d+\\.\\d+\\.\\d+)",
+    "product": "Custom API Server",
+    "version": "$1",
+    "confidence": 80,
+    "description": "Custom API server detection",
+    "author": "user"
+  },
+  {
+    "id": "custom_game_1",
+    "service": "game",
+    "pattern": "GameServer\\s+(\\w+)\\s+v(\\d+\\.\\d+)",
+    "product": "Game Server $1",
+    "version": "$2", 
+    "confidence": 75,
+    "description": "Game server detection",
+    "author": "user"
+  }
+]
