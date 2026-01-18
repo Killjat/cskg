@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网站扫描任务 - 网站扫描系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* 顶部导航栏 */
+        .navbar {
+            background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .navbar h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        /* 导航菜单 */
+        .nav-menu {
+            background: white;
+            padding: 0.5rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
+
+        .nav-menu ul {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: #666;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .nav-menu a:hover,
+        .nav-menu a.active {
+            background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);
+            color: white;
+        }
+
+        /* 主容器 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* 扫描任务区域 */
+        .scan-section {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+
+        /* 扫描选项卡 */
+        .scan-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .tab-btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            background: transparent;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #666;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            color: #1a73e8;
+            border-bottom-color: #1a73e8;
+        }
+
+        /* 扫描表单 */
+        .scan-form {
+            display: none;
+        }
+
+        .scan-form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #1a73e8;
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 150px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: all 0.3s;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: #1a73e8;
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 0.8rem;
+            border: 2px dashed #ddd;
+            border-radius: 4px;
+            text-align: center;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-input-label:hover {
+            border-color: #1a73e8;
+            color: #1a73e8;
+            background: rgba(26, 115, 232, 0.05);
+        }
+
+        .file-name {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f1f3f4;
+            color: #666;
+            margin-left: 1rem;
+        }
+
+        .btn-secondary:hover {
+            background: #e8eaed;
+        }
+
+        /* 扫描状态区域 */
+        .status-section {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .status-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .status-info {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* 扫描日志 */
+        .scan-logs {
+            background: #263238;
+            color: #aed581;
+            padding: 1.5rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            line-height: 1.5;
+        }
+
+        .log-line {
+            margin-bottom: 0.5rem;
+        }
+
+        .log-info {
+            color: #90caf9;
+        }
+
+        .log-success {
+            color: #aed581;
+        }
+
+        .log-error {
+            color: #ef5350;
+        }
+
+        .log-warn {
+            color: #ffb74d;
+        }
+
+        /* 扫描历史区域 */
+        .history-section {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .history-list {
+            margin-top: 1.5rem;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            transition: all 0.3s;
+        }
+
+        .history-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .history-info {
+            flex: 1;
+        }
+
+        .history-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.25rem;
+        }
+
+        .history-meta {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .history-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-completed {
+            background: #e8f5e8;
+            color: #388e3c;
+        }
+
+        .status-running {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-failed {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+
+        /* 加载状态 */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #1a73e8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-menu ul {
+                gap: 1rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .scan-section,
+            .status-section,
+            .history-section {
+                padding: 1.5rem;
+            }
+
+            .scan-tabs {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                margin-bottom: 1rem;
+            }
+
+            .btn-secondary {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar">
+        <h1>🔍 网站扫描系统</h1>
+    </nav>
+
+    <!-- 导航菜单 -->
+    <div class="nav-menu">
+        <ul>
+            <li><a href="/">结果展示</a></li>
+            <li><a href="/scan" class="active">扫描任务</a></li>
+        </ul>
+    </div>
+
+    <!-- 主容器 -->
+    <div class="container">
+        <!-- 扫描任务区域 -->
+        <section class="scan-section">
+            <h2 class="section-title">📋 新建扫描任务</h2>
+
+            <!-- 扫描选项卡 -->
+            <div class="scan-tabs">
+                <button class="tab-btn active" onclick="switchTab('single')">单个URL</button>
+                <button class="tab-btn" onclick="switchTab('multiple')">多个URL</button>
+                <button class="tab-btn" onclick="switchTab('file')">文件导入</button>
+            </div>
+
+            <!-- 单个URL扫描表单 -->
+            <form class="scan-form active" id="singleScanForm" onsubmit="return false;">
+                <div class="form-group">
+                    <label class="form-label" for="singleUrl">网站URL</label>
+                    <input type="text" class="form-input" id="singleUrl" placeholder="请输入网站URL，例如：https://www.example.com" required>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="startSingleScan()">开始扫描</button>
+            </form>
+
+            <!-- 多个URL扫描表单 -->
+            <form class="scan-form" id="multipleScanForm" onsubmit="return false;">
+                <div class="form-group">
+                    <label class="form-label" for="multipleUrls">多个URL</label>
+                    <textarea class="form-textarea" id="multipleUrls" placeholder="请输入多个网站URL，每行一个，例如：
+https://www.example.com
+https://www.baidu.com
+bing.com"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-primary" onclick="startMultipleScan()">开始扫描</button>
+                    <button type="button" class="btn btn-secondary" onclick="clearMultipleUrls()">清空</button>
+                </div>
+            </form>
+
+            <!-- 文件导入扫描表单 -->
+            <form class="scan-form" id="fileScanForm" onsubmit="return false;">
+                <div class="form-group">
+                    <label class="form-label" for="urlFile">上传URL文件</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" class="file-input" id="urlFile" accept=".txt" onchange="handleFileChange(this)">
+                        <label class="file-input-label" for="urlFile">
+                            <span>📁 点击或拖拽文件到此处上传</span>
+                        </label>
+                    </div>
+                    <div class="file-name" id="fileName">未选择文件</div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-primary" onclick="startFileScan()">开始扫描</button>
+                    <button type="button" class="btn btn-secondary" onclick="clearFile()">清空</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- 扫描状态区域 -->
+        <section class="status-section">
+            <div class="status-header">
+                <h2 class="section-title">📊 扫描状态</h2>
+                <button class="btn btn-primary" onclick="refreshLogs()">刷新日志</button>
+            </div>
+            
+            <div class="status-info">
+                <strong>当前状态：</strong><span id="currentStatus">就绪</span>
+            </div>
+            
+            <div class="scan-logs" id="scanLogs">
+                <div class="log-line log-info">📝 扫描日志将显示在此处...</div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        let currentTab = 'single';
+        let currentStatus = 'ready';
+        let selectedFile = null;
+
+        // 切换选项卡
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            // 更新选项卡按钮状态
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+            
+            // 更新表单显示
+            document.querySelectorAll('.scan-form').forEach(form => form.classList.remove('active'));
+            document.getElementById(`${tab}ScanForm`).classList.add('active');
+        }
+
+        // 处理文件选择
+        function handleFileChange(input) {
+            if (input.files.length > 0) {
+                selectedFile = input.files[0];
+                document.getElementById('fileName').textContent = selectedFile.name;
+            }
+        }
+
+        // 清空多个URL
+        function clearMultipleUrls() {
+            document.getElementById('multipleUrls').value = '';
+        }
+
+        // 清空文件选择
+        function clearFile() {
+            document.getElementById('urlFile').value = '';
+            document.getElementById('fileName').textContent = '未选择文件';
+            selectedFile = null;
+        }
+
+        // 更新状态
+        function updateStatus(status) {
+            currentStatus = status;
+            document.getElementById('currentStatus').textContent = status;
+        }
+
+        // 添加日志
+        function addLog(line, type = 'info') {
+            const logs = document.getElementById('scanLogs');
+            const logLine = document.createElement('div');
+            logLine.className = `log-line log-${type}`;
+            logLine.textContent = `[${new Date().toLocaleTimeString()}] ${line}`;
+            logs.appendChild(logLine);
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        // 清空日志
+        function clearLogs() {
+            document.getElementById('scanLogs').innerHTML = '<div class="log-line log-info">📝 扫描日志将显示在此处...</div>';
+        }
+
+        // 刷新日志
+        function refreshLogs() {
+            addLog('🔄 刷新日志...');
+        }
+
+        // 开始单个URL扫描
+        async function startSingleScan() {
+            const url = document.getElementById('singleUrl').value.trim();
+            if (!url) {
+                alert('请输入网站URL');
+                return;
+            }
+
+            updateStatus('运行中');
+            clearLogs();
+            addLog(`📡 开始扫描单个URL: ${url}`);
+
+            try {
+                const response = await fetch('/api/scan/single', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url })
+                });
+
+                const result = await response.json();
+                if (result.status === 'success') {
+                    addLog(`✅ 扫描完成: ${result.message}`);
+                    updateStatus('完成');
+                    document.getElementById('singleUrl').value = '';
+                } else {
+                    addLog(`❌ 扫描失败: ${result.message}`, 'error');
+                    updateStatus('失败');
+                }
+            } catch (error) {
+                addLog(`❌ 扫描出错: ${error.message}`, 'error');
+                updateStatus('出错');
+            }
+        }
+
+        // 开始多个URL扫描
+        async function startMultipleScan() {
+            const urlsText = document.getElementById('multipleUrls').value.trim();
+            if (!urlsText) {
+                alert('请输入至少一个URL');
+                return;
+            }
+
+            const urls = urlsText.split('\n').map(url => url.trim()).filter(url => url);
+            if (urls.length === 0) {
+                alert('请输入有效的URL');
+                return;
+            }
+
+            updateStatus('运行中');
+            clearLogs();
+            addLog(`📡 开始扫描多个URL，共 ${urls.length} 个`);
+
+            try {
+                const response = await fetch('/api/scan/multiple', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ urls })
+                });
+
+                const result = await response.json();
+                if (result.status === 'success') {
+                    addLog(`✅ 扫描完成: ${result.message}`);
+                    updateStatus('完成');
+                    clearMultipleUrls();
+                } else {
+                    addLog(`❌ 扫描失败: ${result.message}`, 'error');
+                    updateStatus('失败');
+                }
+            } catch (error) {
+                addLog(`❌ 扫描出错: ${error.message}`, 'error');
+                updateStatus('出错');
+            }
+        }
+
+        // 开始文件扫描
+        async function startFileScan() {
+            if (!selectedFile) {
+                alert('请选择文件');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            updateStatus('运行中');
+            clearLogs();
+            addLog(`📁 开始扫描文件: ${selectedFile.name}`);
+
+            try {
+                const response = await fetch('/api/scan/file', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                if (result.status === 'success') {
+                    addLog(`✅ 扫描完成: ${result.message}`);
+                    updateStatus('完成');
+                    clearFile();
+                } else {
+                    addLog(`❌ 扫描失败: ${result.message}`, 'error');
+                    updateStatus('失败');
+                }
+            } catch (error) {
+                addLog(`❌ 扫描出错: ${error.message}`, 'error');
+                updateStatus('出错');
+            }
+        }
+    </script>
+</body>
+</html>

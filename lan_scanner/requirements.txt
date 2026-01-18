@@ -1,0 +1,6 @@
+flask
+python-nmap
+scapy
+psutil
+netifaces
+mysql-connector-python

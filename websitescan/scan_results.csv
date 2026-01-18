@@ -1,0 +1,9 @@
+url,title,site_name,frameworks,services,applications,programming_languages,icp,has_login_form,error
+https://www.baidu.com,百度一下，你就知道,百度一下，你就知道,Vue.js,,jQuery,,,True,
+https://www.example.com,Example Domain,Example Domain,,,Cloudflare,,,False,
+https://www.github.com,,,,,,,,False,"HTTPSConnectionPool(host='www.github.com', port=443): Max retries exceeded with url: / (Caused by ConnectTimeoutError(<HTTPSConnection(host='www.github.com', port=443) at 0x10afeb610>, 'Connection to www.github.com timed out. (connect timeout=10)'))"
+https://www.python.org,Welcome to Python.org,Python.org,,,"Varnish, Modernizr, jQuery, jQuery UI",,,False,
+https://www.csdn.net,CSDN_专业开发者社区_已接入DeepSeek R1-0528版本,CSDN_专业开发者社区_已接入DeepSeek R1-0528版本,"Vue.js, Element UI",,jQuery,,ICP备19004658,False,
+https://www.bing.com,搜索 - Microsoft 必应,搜索 - Microsoft 必应,,,,,ICP备10036305,False,
+https://www.tipray.com,天锐绿盾_绿盾加密系统_天锐绿盾官网_绿盾加密软件_天锐绿盾文件加密软件_上网行为管理系统-厦门天锐科技股份有限公司,天锐绿盾_绿盾加密系统_天锐绿盾官网_绿盾加密软件_天锐绿盾文件加密软件_上网行为管理系统-厦门天锐科技股份有限公司,"Bootstrap, animate.css",,"IIS, jQuery, Windows Server",PHP,ICP备06031865,True,
+https://www.iqiyi.com,ç±å¥èº iQIYI-ç­é¨ç¬æ­å§éå¨çº¿è§ç,ç±å¥èº iQIYI-ç­é¨ç¬æ­å§éå¨çº¿è§ç,React,,,,,False,

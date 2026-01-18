@@ -1,0 +1,243 @@
+{
+  "session_info": {
+    "client_id": "analyzer-1768294614",
+    "broker": "test.mosquitto.org",
+    "port": 1883,
+    "topic": "iot/test/topic",
+    "session_start": 1768294614.2527502,
+    "session_end": 1768294619.272044,
+    "session_duration": 5.019293785095215,
+    "formatted_session_start": "2026-01-13 16:56:54.252",
+    "formatted_session_end": "2026-01-13 16:56:59.272"
+  },
+  "messages": [
+    {
+      "msg_type": "CONNECT",
+      "direction": "OUT",
+      "timestamp": 1768294614.2527502,
+      "formatted_time": "2026-01-13 16:56:54.252",
+      "relative_time": 0.0,
+      "details": {
+        "protocol_name": "MQTT",
+        "protocol_version": 4,
+        "protocol_version_str": "MQTTv3.1.1"
+      }
+    },
+    {
+      "msg_type": "PUBACK",
+      "direction": "IN",
+      "timestamp": 1768294614.254176,
+      "formatted_time": "2026-01-13 16:56:54.254",
+      "relative_time": 0.0014257431030273438,
+      "details": {
+        "message_id": 2
+      }
+    },
+    {
+      "msg_type": "CONNECT_ACK",
+      "direction": "IN",
+      "timestamp": 1768294614.57654,
+      "formatted_time": "2026-01-13 16:56:54.576",
+      "relative_time": 0.3237898349761963,
+      "details": {
+        "return_code": 0,
+        "return_code_str": "Connection accepted",
+        "flags": {
+          "session present": 0
+        },
+        "clean_session": false,
+        "session_present": false
+      }
+    },
+    {
+      "msg_type": "SUBACK",
+      "direction": "IN",
+      "timestamp": 1768294614.640248,
+      "formatted_time": "2026-01-13 16:56:54.640",
+      "relative_time": 0.3874979019165039,
+      "details": {
+        "message_id": 1,
+        "granted_qos": [
+          0
+        ]
+      }
+    },
+    {
+      "msg_type": "PUBLISH",
+      "direction": "IN",
+      "timestamp": 1768294614.7323022,
+      "formatted_time": "2026-01-13 16:56:54.732",
+      "relative_time": 0.4795520305633545,
+      "details": {
+        "topic": "iot/test/topic",
+        "payload": "Session test message 1",
+        "payload_length": 22,
+        "qos": 0,
+        "retain": false,
+        "dup": false
+      }
+    },
+    {
+      "msg_type": "PUBACK",
+      "direction": "IN",
+      "timestamp": 1768294615.258373,
+      "formatted_time": "2026-01-13 16:56:55.258",
+      "relative_time": 1.0056228637695312,
+      "details": {
+        "message_id": 3
+      }
+    },
+    {
+      "msg_type": "PUBLISH",
+      "direction": "IN",
+      "timestamp": 1768294615.478786,
+      "formatted_time": "2026-01-13 16:56:55.478",
+      "relative_time": 1.2260358333587646,
+      "details": {
+        "topic": "iot/test/topic",
+        "payload": "Session test message 2",
+        "payload_length": 22,
+        "qos": 0,
+        "retain": false,
+        "dup": false
+      }
+    },
+    {
+      "msg_type": "PUBACK",
+      "direction": "IN",
+      "timestamp": 1768294616.259661,
+      "formatted_time": "2026-01-13 16:56:56.259",
+      "relative_time": 2.006910800933838,
+      "details": {
+        "message_id": 4
+      }
+    },
+    {
+      "msg_type": "PUBLISH",
+      "direction": "IN",
+      "timestamp": 1768294616.4543,
+      "formatted_time": "2026-01-13 16:56:56.454",
+      "relative_time": 2.201549768447876,
+      "details": {
+        "topic": "iot/test/topic",
+        "payload": "Session test message 3 with longer payload to test message handling",
+        "payload_length": 67,
+        "qos": 0,
+        "retain": false,
+        "dup": false
+      }
+    },
+    {
+      "msg_type": "PUBACK",
+      "direction": "IN",
+      "timestamp": 1768294617.263272,
+      "formatted_time": "2026-01-13 16:56:57.263",
+      "relative_time": 3.01052188873291,
+      "details": {
+        "message_id": 5
+      }
+    },
+    {
+      "msg_type": "PUBLISH",
+      "direction": "IN",
+      "timestamp": 1768294617.462411,
+      "formatted_time": "2026-01-13 16:56:57.462",
+      "relative_time": 3.209660768508911,
+      "details": {
+        "topic": "iot/test/topic",
+        "payload": "Session test message 4",
+        "payload_length": 22,
+        "qos": 0,
+        "retain": false,
+        "dup": false
+      }
+    },
+    {
+      "msg_type": "PUBACK",
+      "direction": "IN",
+      "timestamp": 1768294618.2681541,
+      "formatted_time": "2026-01-13 16:56:58.268",
+      "relative_time": 4.015403985977173,
+      "details": {
+        "message_id": 6
+      }
+    },
+    {
+      "msg_type": "PUBLISH",
+      "direction": "IN",
+      "timestamp": 1768294618.469553,
+      "formatted_time": "2026-01-13 16:56:58.469",
+      "relative_time": 4.2168028354644775,
+      "details": {
+        "topic": "iot/test/topic",
+        "payload": "Session test message 5",
+        "payload_length": 22,
+        "qos": 0,
+        "retain": false,
+        "dup": false
+      }
+    },
+    {
+      "msg_type": "DISCONNECT",
+      "direction": "OUT",
+      "timestamp": 1768294619.272355,
+      "formatted_time": "2026-01-13 16:56:59.272",
+      "relative_time": 5.019604921340942,
+      "details": {
+        "return_code": 0
+      }
+    }
+  ],
+  "statistics": {
+    "total_messages": 14,
+    "message_types": {
+      "CONNECT": 1,
+      "PUBACK": 5,
+      "CONNECT_ACK": 1,
+      "SUBACK": 1,
+      "PUBLISH": 5,
+      "DISCONNECT": 1
+    },
+    "message_directions": {
+      "OUT": 2,
+      "IN": 12
+    },
+    "topics": {
+      "iot/test/topic": 5
+    },
+    "qos_distribution": {
+      "0": 5
+    },
+    "retain_distribution": {
+      "false": 5
+    },
+    "dup_distribution": {
+      "false": 5
+    }
+  },
+  "session_events": [
+    {
+      "event": "CONNECT_REQUEST",
+      "timestamp": 1768294614.2527502
+    },
+    {
+      "event": "CONNECTED",
+      "timestamp": 1768294614.57654,
+      "details": {
+        "return_code": 0,
+        "return_code_str": "Connection accepted"
+      }
+    },
+    {
+      "event": "DISCONNECT_REQUEST",
+      "timestamp": 1768294619.272077
+    },
+    {
+      "event": "DISCONNECTED",
+      "timestamp": 1768294619.272355,
+      "details": {
+        "return_code": 0
+      }
+    }
+  ]
+}

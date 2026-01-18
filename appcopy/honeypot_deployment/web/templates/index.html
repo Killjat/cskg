@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .title }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: #34495e;
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        nav {
+            background-color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+        }
+
+        nav li {
+            margin-right: 2rem;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #3498db;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        nav a:hover {
+            color: #2980b9;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: #7f8c8d;
+        }
+
+        .recent-connections {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
+        }
+
+        .footer {
+            background-color: #34495e;
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 2rem;
+        }
+
+        .timestamp {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>{{ .title }}</h1>
+            <p class="subtitle">工业协议蜜罐系统 - 实时监控与设备指纹识别</p>
+        </div>
+    </header>
+
+    <nav>
+        <div class="container">
+            <ul>
+                <li><a href="/">首页</a></li>
+                <li><a href="/fingerprints">设备指纹</a></li>
+                <li><a href="/api/fingerprints">API文档</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <!-- 统计数据 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="total-connections">0</div>
+                <div class="stat-label">总连接数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="unique-ips">0</div>
+                <div class="stat-label">唯一IP数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="device-types">0</div>
+                <div class="stat-label">设备类型数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-fingerprints">{{ len .fingerprints }}</div>
+                <div class="stat-label">设备指纹数</div>
+            </div>
+        </div>
+
+        <!-- 最近连接 -->
+        <div class="recent-connections">
+            <h2>最近设备连接</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>客户端IP</th>
+                        <th>设备型号</th>
+                        <th>制造商</th>
+                        <th>协议</th>
+                        <th>首次发现</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ if eq (len .fingerprints) 0 }}
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: #7f8c8d;">暂无设备连接记录</td>
+                    </tr>
+                    {{ else }}
+                    {{ range .fingerprints }}
+                    <tr>
+                        <td>{{ .ClientIP }}</td>
+                        <td>{{ .DeviceInfo.DeviceModel }}</td>
+                        <td>{{ .DeviceInfo.Manufacturer }}</td>
+                        <td>{{ .Protocol }}</td>
+                        <td>{{ .FirstSeen.Format "2006-01-02 15:04:05" }}</td>
+                        <td><a href="/fingerprints/{{ .ID }}" class="btn">详情</a></td>
+                    </tr>
+                    {{ end }}
+                    {{ end }}
+                </tbody>
+            </table>
+            <p class="timestamp">页面更新时间: {{ .timestamp }}</p>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Industrial Protocol Honeypot System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // 实时更新统计数据
+        function updateStats() {
+            fetch('/api/stats')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('total-connections').textContent = data.stats.total_connections;
+                        document.getElementById('unique-ips').textContent = data.stats.unique_ips_count;
+                        document.getElementById('device-types').textContent = Object.keys(data.stats.device_types).length;
+                    }
+                })
+                .catch(error => console.error('Failed to update stats:', error));
+        }
+
+        // 初始化更新
+        updateStats();
+        // 每5秒更新一次
+        setInterval(updateStats, 5000);
+    </script>
+</body>
+</html>

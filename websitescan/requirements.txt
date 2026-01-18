@@ -1,0 +1,6 @@
+requests
+beautifulsoup4
+lxml
+python-wappalyzer
+certifi
+Flask

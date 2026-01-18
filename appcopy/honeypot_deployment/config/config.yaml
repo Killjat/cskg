@@ -1,0 +1,81 @@
+# 蜜罐系统配置文件
+
+honeypot:
+  # 系统名称
+  name: "Industrial Protocol Honeypot"
+  # 版本
+  version: "1.0.0"
+  # 日志级别: debug, info, warn, error
+  log_level: "info"
+  # 日志文件路径
+  log_path: "./logs"
+
+# 服务配置
+services:
+  # Modbus服务配置
+  modbus:
+    enabled: true
+    port: 502
+  # MySQL服务配置
+  mysql:
+    enabled: true
+    port: 3306
+  # Redis服务配置
+  redis:
+    enabled: true
+    port: 6379
+  # Kafka服务配置
+  kafka:
+    enabled: true
+    port: 9092
+
+# 设备指纹识别配置
+device_fingerprint:
+  enabled: true
+  # 指纹数据库路径
+  db_path: "./data/fingerprints.db"
+  # 指纹识别规则配置
+  rules:
+    user_agent_analysis: true
+    ja3_fingerprinting: true
+    tcp_window_scaling: true
+    tls_extensions: true
+
+# 数据包捕获配置
+packet_capture:
+  enabled: true
+  # 监听的网络接口
+  interfaces: ["any"]
+  # 捕获的端口列表（appcopy系统支持的所有协议端口）
+  ports: [502, 3306, 6379, 9092, 80, 9999]
+  # 全流量捕获开关
+  full_capture: true
+  # 流量保存路径
+  save_path: "./data/pcap"
+
+# Web界面配置
+web:
+  enabled: true
+  # 监听地址
+  host: "0.0.0.0"
+  # 监听端口
+  port: 8080
+  # 启用HTTPS
+  https: false
+  # 会话超时时间（秒）
+  session_timeout: 3600
+
+# API配置
+api:
+  enabled: true
+  # API密钥
+  key: "honeypot-api-key"
+  # 速率限制（每秒请求数）
+  rate_limit: 100
+
+# 会话管理配置
+session:
+  # 会话超时时间（秒）
+  timeout: 3600
+  # 清理间隔（秒）
+  cleanup_interval: 600

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>局域网扫描与流量监控系统</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 56px;
+        }
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 100px 0;
+            margin-bottom: 30px;
+        }
+        .feature-card {
+            margin-bottom: 30px;
+            transition: transform 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #684293 100%);
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">局域网扫描系统</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="/">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/devices">设备列表</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/traffic">流量监控</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 英雄区域 -->
+    <section class="hero">
+        <div class="container text-center">
+            <h1 class="display-4 mb-4">局域网扫描与流量监控系统</h1>
+            <p class="lead mb-4">全面扫描局域网内设备，监控网络流量，保障网络安全</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="/devices" class="btn btn-light btn-lg">查看设备列表</a>
+                <a href="/traffic" class="btn btn-outline-light btn-lg">查看流量监控</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 功能介绍 -->
+    <section class="container">
+        <div class="row text-center mb-5">
+            <div class="col-md-4">
+                <div class="card feature-card shadow-sm">
+                    <div class="card-body">
+                        <div class="h1 mb-3 text-primary">🔍</div>
+                        <h5 class="card-title">设备扫描</h5>
+                        <p class="card-text">自动发现局域网内所有活跃设备，获取IP、MAC地址和主机名信息</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card feature-card shadow-sm">
+                    <div class="card-body">
+                        <div class="h1 mb-3 text-primary">📡</div>
+                        <h5 class="card-title">端口扫描</h5>
+                        <p class="card-text">扫描设备开放端口，识别服务类型和应用程序，支持1-65536端口范围</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card feature-card shadow-sm">
+                    <div class="card-body">
+                        <div class="h1 mb-3 text-primary">📊</div>
+                        <h5 class="card-title">流量监控</h5>
+                        <p class="card-text">实时监听和分析网络流量，记录数据包信息，支持流量可视化展示</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 系统特性 -->
+        <div class="row mb-5">
+            <div class="col-md-6">
+                <h3>系统特性</h3>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">• 自动识别局域网网段</li>
+                    <li class="list-group-item">• 支持TCP和UDP端口扫描</li>
+                    <li class="list-group-item">• 常用服务自动识别</li>
+                    <li class="list-group-item">• 实时流量捕获和分析</li>
+                    <li class="list-group-item">• 数据持久化到MySQL数据库</li>
+                    <li class="list-group-item">• 支持CSV格式数据导出</li>
+                    <li class="list-group-item">• 响应式Web界面设计</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h3>使用说明</h3>
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">命令行扫描</h5>
+                        <pre class="bg-light p-3 rounded"><code># 扫描局域网设备
+python main.py scan
+
+# 指定网络地址
+python main.py scan -n 192.168.1.0/24
+
+# 设置扫描速度
+python main.py scan -s T2
+
+# 启动流量监听
+python main.py traffic</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container text-center">
+            <p>&copy; 2024 局域网扫描与流量监控系统. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

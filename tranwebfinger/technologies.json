@@ -1,0 +1,153 @@
+{
+  "technologies": {
+    "WordPress": {
+      "name": "WordPress",
+      "category": "CMS",
+      "description": "Free and open-source content management system based on PHP and MySQL.",
+      "website": "https://wordpress.org",
+      "headers": {
+        "X-Powered-By": [
+          "WordPress"
+        ],
+        "Set-Cookie": [
+          "wordpress_",
+          "wp-"
+        ],
+        "Link": [
+          "wp-content/",
+          "wp-includes/"
+        ]
+      },
+      "html": [
+        "<meta name=\"generator\" content=\"WordPress"
+      ],
+      "scripts": [
+        "wp-content/",
+        "wp-includes/"
+      ]
+    },
+    "React": {
+      "name": "React",
+      "category": "JavaScript Frameworks",
+      "description": "A JavaScript library for building user interfaces.",
+      "website": "https://react.dev",
+      "scripts": [
+        "react\\.js",
+        "react-dom\\.js",
+        "create-react-app",
+        "https://d3njjcbhbojbot\\.cloudfront\\.net/webapps/r2\\-builds/front\\-page/allstyles\\.1133f2634a782ab33fb3\\.js",
+        "https://d3njjcbhbojbot\\.cloudfront\\.net/webapps/r2\\-builds/front\\-page/en\\.app\\.1cc5a48243bc23fab536\\.js",
+        "https://browser\\.sentry\\-cdn\\.com/7\\.116\\.0/bundle\\.tracing\\.min\\.js",
+        "/frontends\\-homepage/api/context/\\?locale=en",
+        "https://frontends\\.udemycdn\\.com/design\\-system/icons/v20/icon\\-spritemap\\.js",
+        "https://cdn\\.cookielaw\\.org/consent/25ab360c\\-347c\\-4a85\\-8b93\\-1e0326234b75/otautoblock\\.js",
+        "https://cdn\\.cookielaw\\.org/scripttemplates/otsdkstub\\.js",
+        "https://refer\\.udemy\\.com/core\\.js",
+        "https://frontends\\.udemycdn\\.com/frontends\\-homepage/_next/static/chunks/polyfills\\-c67a75d1b6f99dc8\\.js",
+        "https://frontends\\.udemycdn\\.com/frontends\\-homepage/_next/static/chunks/webpack\\-510bc2584667889e\\.js",
+        "https://frontends\\.udemycdn\\.com/frontends\\-homepage/_next/static/chunks/framework\\-8b7974553b1447ee\\.js",
+        "https://frontends\\.udemycdn\\.com/frontends\\-homepage/_next/static/chunks/main\\-78a35cdf9421df4f\\.js",
+        "https://frontends\\.udemycdn\\.com/frontends\\-homepage/_next/static/chunks/pages/_app\\-9d641ab5ea25799d\\.js",
+        "/_next/static/chunks/4bd1b696\\-74b489593458cc56\\.js",
+        "/_next/static/chunks/1684\\-754cd79cae923d0d\\.js",
+        "/_next/static/chunks/main\\-app\\-85789d807cfcda53\\.js",
+        "/_next/static/chunks/0e5ce63c\\-c7d434a03502d8b8\\.js",
+        "/_next/static/chunks/c233e9bd\\-b7c9422fb889c5f2\\.js",
+        "/_next/static/chunks/3088\\-6a86854b61f2cb0b\\.js",
+        "/_next/static/chunks/6874\\-761b0feea70cad7a\\.js",
+        "/_next/static/chunks/1597\\-526d5bdf9a410b81\\.js",
+        "/_next/static/chunks/9402\\-7f0d5d67f0ce6e3e\\.js",
+        "/_next/static/chunks/3886\\-7a9678144bd22a2e\\.js"
+      ],
+      "html": [
+        "<div id=\"root\">",
+        "<div class=\"react-root\">",
+        "<meta\\ data\\-react\\-helmet=\"true\"\\ name=\"description\"\\ content=\"learn\\ new\\ job\\ skills\\ in\\ online\\",
+        "<meta\\ data\\-react\\-helmet=\"true\"\\ property=\"og:description\"\\ content=\"learn\\ new\\ job\\ skills\\ in\\ ",
+        "<meta\\ data\\-react\\-helmet=\"true\"\\ property=\"twitter:description\"\\ content=\"learn\\ new\\ job\\ skills\\",
+        "<meta\\ name=\"description\"\\ content=\"udemy\\ is\\ an\\ online\\ learning\\ and\\ teaching\\ marketplace\\ wit",
+        "<meta\\ property=\"og:description\"\\ content=\"udemy\\ is\\ an\\ online\\ learning\\ and\\ teaching\\ marketpla",
+        "<meta\\ name=\"twitter:description\"\\ content=\"udemy\\ is\\ an\\ online\\ learning\\ and\\ teaching\\ marketpl",
+        "<meta\\ itemprop=\"description\"\\ content=\"udemy\\ is\\ an\\ online\\ learning\\ and\\ teaching\\ marketplace\\",
+        "<meta\\ name=\"description\"\\ content=\"find\\ the\\ online\\ learning\\ path\\ for\\ you,\\ delivered\\ by\\ wor",
+        "<meta\\ property=\"og:description\"\\ content=\"find\\ the\\ online\\ learning\\ path\\ for\\ you,\\ delivered\\ ",
+        "<meta\\ name=\"twitter:description\"\\ content=\"find\\ the\\ online\\ learning\\ path\\ for\\ you,\\ delivered\\"
+      ],
+      "headers": {
+        "X-Powered-By": [
+          "React"
+        ]
+      }
+    },
+    "Nginx": {
+      "name": "Nginx",
+      "category": "Web Servers",
+      "description": "High-performance HTTP and reverse proxy server.",
+      "website": "https://nginx.org",
+      "headers": {
+        "Server": [
+          "nginx"
+        ]
+      }
+    },
+    "BFE": {
+      "name": "BFE",
+      "category": "Web Servers",
+      "description": "Baidu Front End, Baidu's custom web server and CDN system.",
+      "website": "https://www.baidu.com",
+      "headers": {
+        "Server": [
+          "bfe"
+        ]
+      }
+    },
+    "Baidu": {
+      "name": "Baidu",
+      "category": "Search Engines",
+      "description": "China's largest search engine.",
+      "website": "https://www.baidu.com",
+      "headers": {
+        "Set-Cookie": [
+          "BDORZ=",
+          "CSRF3\\-Token=1769000044\\.saXM5LnbLZFuTmjL;\\ Max\\-Age=8",
+          "CSRF3\\-Token=1769000456\\.xIxlHea8ARI0zb59;\\ Max\\-Age=8"
+        ],
+        "set-cookie": [
+          "_fs_ch_st_FSBmUei20MqUiJb9=AUH7ubo0aXyQQU4JCE7kwI2",
+          "_fs_ch_st_FSBmUei20MqUiJb9=ATKvunT2TpAEq1iFD9J3EtG"
+        ],
+        "Server": [
+          "envoy"
+        ],
+        "x-powered-by": [
+          "Express"
+        ]
+      },
+      "html": [
+        "baidu",
+        "\\bjava\\b",
+        "<meta\\ data\\-react\\-helmet=\"true\"\\ name=\"description\"\\ content=\"learn\\ new\\ job\\ skills\\ in\\ online\\",
+        "<meta\\ data\\-react\\-helmet=\"true\"\\ property=\"og:description\"\\ content=\"learn\\ new\\ job\\ skills\\ in\\ ",
+        "<meta\\ data\\-react\\-helmet=\"true\"\\ property=\"twitter:description\"\\ content=\"learn\\ new\\ job\\ skills\\"
+      ]
+    }
+  },
+  "categories": {
+    "CMS": {
+      "name": "Content Management Systems",
+      "priority": 1
+    },
+    "JavaScript Frameworks": {
+      "name": "JavaScript Frameworks",
+      "priority": 2
+    },
+    "Web Servers": {
+      "name": "Web Servers",
+      "priority": 3
+    },
+    "Search Engines": {
+      "name": "Search Engines",
+      "priority": 4
+    }
+  }
+}

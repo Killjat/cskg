@@ -1,0 +1,8 @@
+2026-01-13 02:28:12 - INFO - system_logger - Test info message
+2026-01-13 02:28:12 - WARNING - system_logger - Test warning message
+2026-01-13 02:28:12 - ERROR - system_logger - Test error message
+2026-01-13 02:28:12 - CRITICAL - system_logger - Test critical message
+2026-01-13 02:28:12 - INFO - system_logger - Service started: TestService v1.0 - Status: running
+2026-01-13 02:28:12 - INFO - system_logger - Service stopped: TestService v1.0 - Status: stopped
+2026-01-13 02:28:12 - ERROR - system_logger - Service error: TestService v1.0 - Error: Connection refused
+2026-01-13 02:28:12 - INFO - system_logger - Access: 127.0.0.1 - GET /api/services - Status: 200

@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>服务器监控大屏</title>
+    <!-- 引入Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- 引入Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- 引入Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #1a1a2e;
+            color: #e6e6e6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .dashboard-card {
+            background-color: #16213e;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.4);
+        }
+        .card-title {
+            color: #0f3460;
+            font-size: 1.25rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .card-title i {
+            margin-right: 10px;
+            color: #4ecdc4;
+        }
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #4ecdc4;
+            margin: 10px 0;
+        }
+        .stat-label {
+            color: #a8a8a8;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+        .table-container {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        table {
+            background-color: transparent;
+        }
+        th {
+            color: #4ecdc4;
+            border-bottom: 1px solid #333;
+        }
+        td {
+            color: #e6e6e6;
+            border-bottom: 1px solid #333;
+        }
+        tr:hover td {
+            background-color: rgba(78, 205, 196, 0.1);
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .status-active {
+            background-color: #2ecc71;
+        }
+        .status-running {
+            background-color: #3498db;
+        }
+        .status-stopped {
+            background-color: #e74c3c;
+        }
+        .update-time {
+            color: #a8a8a8;
+            font-size: 0.8rem;
+            margin-top: 10px;
+            text-align: right;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        h1 {
+            color: #4ecdc4;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2.5rem;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .refresh-control {
+            display: flex;
+            align-items: center;
+        }
+        .refresh-control label {
+            margin-right: 10px;
+        }
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(78, 205, 196, 0.3);
+            border-radius: 50%;
+            border-top-color: #4ecdc4;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            color: #a8a8a8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="header">
+            <h1><i class="fa fa-line-chart"></i> 服务器监控大屏</h1>
+            <div class="refresh-control">
+                <label for="refresh-interval">自动刷新：</label>
+                <select id="refresh-interval" class="form-select form-select-sm" style="width: auto;">
+                    <option value="5">5秒</option>
+                    <option value="10" selected>10秒</option>
+                    <option value="30">30秒</option>
+                    <option value="60">60秒</option>
+                    <option value="0">关闭</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 系统统计概览 -->
+        <div class="grid-container">
+            <div class="dashboard-card">
+                <div class="card-title"><i class="fa fa-server"></i> 系统状态</div>
+                <div id="system-status" class="loading">
+                    <div class="spinner"></div> 加载中...
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-title"><i class="fa fa-users"></i> 登录用户</div>
+                <div id="login-count" class="stat-value">-</div>
+                <div class="stat-label">当前登录用户数</div>
+                <div id="login-users" class="loading">
+                    <div class="spinner"></div> 加载中...
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-title"><i class="fa fa-tasks"></i> 进程统计</div>
+                <div id="process-count" class="stat-value">-</div>
+                <div class="stat-label">总进程数</div>
+                <div id="running-processes" class="stat-value" style="font-size: 1.5rem; margin-top: 20px;">-</div>
+                <div class="stat-label">运行中进程数</div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-title"><i class="fa fa-terminal"></i> 命令执行</div>
+                <div id="command-count" class="stat-value">-</div>
+                <div class="stat-label">当前执行命令数</div>
+                <div id="current-commands" class="loading" style="margin-top: 20px;">
+                    <div class="spinner"></div> 加载中...
+                </div>
+            </div>
+        </div>
+
+        <!-- 系统统计图表 -->
+        <div class="grid-container">
+            <div class="dashboard-card full-width">
+                <div class="card-title"><i class="fa fa-area-chart"></i> 系统资源使用率</div>
+                <div class="chart-container">
+                    <canvas id="resource-chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 详细数据 -->
+        <div class="grid-container">
+            <div class="dashboard-card">
+                <div class="card-title"><i class="fa fa-table"></i> 进程列表</div>
+                <div class="table-container">
+                    <table class="table table-striped table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>PID</th>
+                                <th>名称</th>
+                                <th>状态</th>
+                                <th>CPU %</th>
+                                <th>内存 %</th>
+                                <th>用户</th>
+                            </tr>
+                        </thead>
+                        <tbody id="process-list">
+                            <tr>
+                                <td colspan="6" class="loading">
+                                    <div class="spinner"></div> 加载中...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <div class="card-title"><i class="fa fa-file-text"></i> 文件操作</div>
+                <div class="table-container">
+                    <table class="table table-striped table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>时间</th>
+                                <th>操作</th>
+                                <th>路径</th>
+                                <th>进程</th>
+                            </tr>
+                        </thead>
+                        <tbody id="file-operations">
+                            <tr>
+                                <td colspan="4" class="loading">
+                                    <div class="spinner"></div> 加载中...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-card full-width">
+            <div class="update-time">
+                <i class="fa fa-clock-o"></i> 最后更新: <span id="last-update">-</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let refreshInterval = 10000; // 默认10秒
+        let refreshTimer = null;
+        let resourceChart = null;
+        let chartData = {
+            labels: [],
+            cpuData: [],
+            memoryData: []
+        };
+
+        // 初始化图表
+        function initChart() {
+            const ctx = document.getElementById('resource-chart').getContext('2d');
+            resourceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [
+                        {
+                            label: 'CPU 使用率 (%)',
+                            data: chartData.cpuData,
+                            borderColor: '#e74c3c',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: '内存 使用率 (%)',
+                            data: chartData.memoryData,
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e6e6e6'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: '#a8a8a8'
+                            },
+                            grid: {
+                                color: '#333'
+                            }
+                        },
+                        y: {
+                            min: 0,
+                            max: 100,
+                            ticks: {
+                                color: '#a8a8a8'
+                            },
+                            grid: {
+                                color: '#333'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 更新图表数据
+        function updateChart(cpuUsage, memoryUsage) {
+            const now = new Date();
+            const timeLabel = now.toLocaleTimeString();
+            
+            chartData.labels.push(timeLabel);
+            chartData.cpuData.push(cpuUsage);
+            chartData.memoryData.push(memoryUsage);
+            
+            // 最多保存30个数据点
+            if (chartData.labels.length > 30) {
+                chartData.labels.shift();
+                chartData.cpuData.shift();
+                chartData.memoryData.shift();
+            }
+            
+            if (resourceChart) {
+                resourceChart.update();
+            }
+        }
+
+        // 获取系统状态
+        async function fetchSystemStats() {
+            try {
+                const response = await fetch('/api/v1/system-stats');
+                const data = await response.json();
+                const stats = data.data;
+                
+                // 更新系统状态卡片
+                document.getElementById('system-status').innerHTML = `
+                    <div class="stat-label">CPU 使用率</div>
+                    <div class="stat-value">${stats.cpu_usage.toFixed(1)}%</div>
+                    <div class="stat-label">内存 使用率</div>
+                    <div class="stat-value">${stats.memory_usage.toFixed(1)}%</div>
+                    <div class="stat-label">磁盘 使用率</div>
+                    <div class="stat-value" style="font-size: 1.5rem;">${stats.disk_usage.toFixed(1)}%</div>
+                `;
+                
+                // 更新图表
+                updateChart(stats.cpu_usage, stats.memory_usage);
+            } catch (error) {
+                console.error('获取系统状态失败:', error);
+                document.getElementById('system-status').innerHTML = '<div class="text-danger">获取失败</div>';
+            }
+        }
+
+        // 获取登录信息
+        async function fetchLogins() {
+            try {
+                const response = await fetch('/api/v1/logins');
+                const data = await response.json();
+                const logins = data.data;
+                
+                document.getElementById('login-count').textContent = logins.length;
+                
+                let html = '';
+                if (logins.length > 0) {
+                    logins.forEach(login => {
+                        html += `
+                            <div style="padding: 5px 0; border-bottom: 1px solid #333;">
+                                <div><strong>${login.username}</strong> <span class="status-indicator status-active"></span>活跃</div>
+                                <div style="font-size: 0.8rem; color: #a8a8a8;">${login.terminal} | ${login.source_ip || '本地'} | ${login.login_type}</div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    html = '<div style="color: #a8a8a8; padding: 20px 0;">当前没有登录用户</div>';
+                }
+                
+                document.getElementById('login-users').innerHTML = html;
+            } catch (error) {
+                console.error('获取登录信息失败:', error);
+                document.getElementById('login-count').textContent = '-';
+                document.getElementById('login-users').innerHTML = '<div class="text-danger">获取失败</div>';
+            }
+        }
+
+        // 获取进程信息
+        async function fetchProcesses() {
+            try {
+                const response = await fetch('/api/v1/processes');
+                const data = await response.json();
+                const processes = data.data;
+                
+                document.getElementById('process-count').textContent = processes.length;
+                
+                // 获取运行中的进程数
+                const runningCount = processes.filter(p => p.status === 'running').length;
+                document.getElementById('running-processes').textContent = runningCount;
+                
+                // 更新进程列表
+                let html = '';
+                if (processes.length > 0) {
+                    // 只显示前10个进程
+                    const displayProcesses = processes.slice(0, 10);
+                    displayProcesses.forEach(process => {
+                        let statusClass = '';
+                        let statusText = process.status;
+                        switch (process.status) {
+                            case 'running':
+                                statusClass = 'status-running';
+                                statusText = '运行中';
+                                break;
+                            case 'sleeping':
+                                statusText = '休眠';
+                                break;
+                            case 'zombie':
+                                statusClass = 'status-stopped';
+                                statusText = '僵尸';
+                                break;
+                            case 'stopped':
+                                statusClass = 'status-stopped';
+                                statusText = '已停止';
+                                break;
+                        }
+                        
+                        html += `
+                            <tr>
+                                <td>${process.pid}</td>
+                                <td>${process.name}</td>
+                                <td><span class="status-indicator ${statusClass}"></span>${statusText}</td>
+                                <td>${process.cpu_usage.toFixed(1)}</td>
+                                <td>${process.memory_usage.toFixed(1)}</td>
+                                <td>${process.username}</td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    html = '<tr><td colspan="6" style="text-align: center; color: #a8a8a8;">没有进程信息</td></tr>';
+                }
+                
+                document.getElementById('process-list').innerHTML = html;
+            } catch (error) {
+                console.error('获取进程信息失败:', error);
+                document.getElementById('process-count').textContent = '-';
+                document.getElementById('running-processes').textContent = '-';
+                document.getElementById('process-list').innerHTML = '<tr><td colspan="6" class="text-danger" style="text-align: center;">获取失败</td></tr>';
+            }
+        }
+
+        // 获取命令信息
+        async function fetchCommands() {
+            try {
+                const response = await fetch('/api/v1/commands');
+                const data = await response.json();
+                const commands = data.data;
+                
+                document.getElementById('command-count').textContent = commands.length;
+                
+                let html = '';
+                if (commands.length > 0) {
+                    commands.forEach(command => {
+                        html += `
+                            <div style="padding: 5px 0; border-bottom: 1px solid #333; font-size: 0.85rem;">
+                                <div><strong>${command.username}</strong> (PID: ${command.pid})</div>
+                                <div style="color: #a8a8a8; margin-top: 2px;">${command.command}</div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    html = '<div style="color: #a8a8a8; padding: 20px 0;">当前没有执行中的命令</div>';
+                }
+                
+                document.getElementById('current-commands').innerHTML = html;
+            } catch (error) {
+                console.error('获取命令信息失败:', error);
+                document.getElementById('command-count').textContent = '-';
+                document.getElementById('current-commands').innerHTML = '<div class="text-danger">获取失败</div>';
+            }
+        }
+
+        // 获取文件操作信息
+        async function fetchFileOperations() {
+            try {
+                const response = await fetch('/api/v1/file-operations');
+                const data = await response.json();
+                const fileOps = data.data;
+                
+                let html = '';
+                if (fileOps.length > 0) {
+                    // 只显示前10个文件操作
+                    const displayOps = fileOps.slice(-10).reverse();
+                    displayOps.forEach(op => {
+                        const time = new Date(op.operation_time).toLocaleTimeString();
+                        
+                        html += `
+                            <tr>
+                                <td>${time}</td>
+                                <td>${op.operation}</td>
+                                <td>${op.file_path}</td>
+                                <td>${op.process_name} (${op.pid})</td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    html = '<tr><td colspan="4" style="text-align: center; color: #a8a8a8;">没有文件操作记录</td></tr>';
+                }
+                
+                document.getElementById('file-operations').innerHTML = html;
+            } catch (error) {
+                console.error('获取文件操作信息失败:', error);
+                document.getElementById('file-operations').innerHTML = '<tr><td colspan="4" class="text-danger" style="text-align: center;">获取失败</td></tr>';
+            }
+        }
+
+        // 更新所有数据
+        async function updateAllData() {
+            const startTime = Date.now();
+            
+            // 并行获取所有数据
+            await Promise.all([
+                fetchSystemStats(),
+                fetchLogins(),
+                fetchProcesses(),
+                fetchCommands(),
+                fetchFileOperations()
+            ]);
+            
+            // 更新最后更新时间
+            const endTime = Date.now();
+            const now = new Date();
+            document.getElementById('last-update').textContent = `${now.toLocaleString()} (耗时: ${endTime - startTime}ms)`;
+        }
+
+        // 设置自动刷新
+        function setAutoRefresh() {
+            const interval = parseInt(document.getElementById('refresh-interval').value) * 1000;
+            
+            if (refreshTimer) {
+                clearInterval(refreshTimer);
+                refreshTimer = null;
+            }
+            
+            if (interval > 0) {
+                refreshTimer = setInterval(updateAllData, interval);
+            }
+        }
+
+        // 初始化
+        function init() {
+            initChart();
+            updateAllData();
+            setAutoRefresh();
+            
+            // 监听刷新间隔变化
+            document.getElementById('refresh-interval').addEventListener('change', setAutoRefresh);
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

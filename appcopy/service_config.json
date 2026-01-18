@@ -1,0 +1,55 @@
+{
+  "applications": {
+    "modbus": {
+      "1.0": {
+        "name": "Modbus TCP Server",
+        "description": "Basic Modbus TCP server implementation",
+        "script": "modbus_server.py",
+        "port": 502,
+        "command": "python3 modbus_server.py"
+      },
+      "2.0": {
+        "name": "Vulnerable Modbus Gateway",
+        "description": "Modbus gateway with CVE-2021-4161 vulnerability",
+        "script": "vulnerable_modbus_gateway.py",
+        "ports": [502, 80],
+        "command": "python3 vulnerable_modbus_gateway.py"
+      }
+    },
+    "http": {
+      "1.0": {
+        "name": "Simple HTTP Server",
+        "description": "Basic Python HTTP server",
+        "port": 8000,
+        "command": "python3 -m http.server 8000"
+      }
+    },
+    "mysql": {
+      "1.0": {
+        "name": "MySQL Server",
+        "description": "Basic MySQL server implementation",
+        "script": "mysql_server.py",
+        "port": 3306,
+        "command": "python3 mysql_server.py"
+      }
+    },
+    "kafka": {
+      "1.0": {
+        "name": "Kafka Server",
+        "description": "Basic Kafka server implementation",
+        "script": "kafka_server.py",
+        "port": 9092,
+        "command": "python3 kafka_server.py"
+      }
+    },
+    "redis": {
+      "1.0": {
+        "name": "Redis Server",
+        "description": "Basic Redis server implementation",
+        "script": "redis_server.py",
+        "port": 6379,
+        "command": "python3 redis_server.py"
+      }
+    }
+  }
+}

@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}购物车 - 网吧点餐系统{% endblock %}
+
+{% block navigation %}
+    {% include 'customer/navigation.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center mb-5">购物车</h1>
+    
+    {% if products %}
+        <!-- Cart Items -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">商品信息</th>
+                            <th scope="col" class="text-center">单价</th>
+                            <th scope="col" class="text-center">数量</th>
+                            <th scope="col" class="text-center">小计</th>
+                            <th scope="col" class="text-center">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in products %}
+                            <tr>
+                                <!-- Product Info -->
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3">
+                                            <i class="fa fa-shopping-bag" style="font-size: 2rem; color: #6c757d;"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-1">{{ item.product.name }}</h5>
+                                            <p class="text-muted mb-0">{{ item.product.description[:30] }}{% if item.product.description|length > 30 %}...{% endif %}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                
+                                <!-- Price -->
+                                <td class="text-center align-middle">¥{{ item.product.price }}</td>
+                                
+                                <!-- Quantity -->
+                                <td class="text-center align-middle">
+                                    <form method="POST" action="{{ url_for('customer.update_cart', product_id=item.product.id) }}">
+                                        <div class="input-group input-group-sm" style="width: 120px; margin: 0 auto;">
+                                            <input type="number" class="form-control text-center" name="quantity" value="{{ item.quantity }}" min="1" max="{{ item.product.stock }}">
+                                            <button type="submit" class="btn btn-outline-primary">
+                                                <i class="fa fa-refresh"></i>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </td>
+                                
+                                <!-- Subtotal -->
+                                <td class="text-center align-middle text-primary fw-bold">¥{{ item.subtotal }}</td>
+                                
+                                <!-- Actions -->
+                                <td class="text-center align-middle">
+                                    <a href="{{ url_for('customer.remove_from_cart', product_id=item.product.id) }}" class="btn btn-danger btn-sm">
+                                        <i class="fa fa-trash"></i> 删除
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="text-end fw-bold">总计：</td>
+                            <td class="text-center text-primary fw-bold fs-4">¥{{ total_amount }}</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Cart Actions -->
+        <div class="row">
+            <div class="col-md-6">
+                <a href="{{ url_for('customer.home') }}" class="btn btn-outline-primary btn-lg">
+                    <i class="fa fa-arrow-left me-2"></i> 继续购物
+                </a>
+                <a href="{{ url_for('customer.clear_cart') }}" class="btn btn-outline-danger btn-lg ms-2">
+                    <i class="fa fa-trash me-2"></i> 清空购物车
+                </a>
+            </div>
+            <div class="col-md-6 text-end">
+                <a href="{{ url_for('customer.checkout') }}" class="btn btn-primary btn-lg">
+                    <i class="fa fa-check me-2"></i> 去结算
+                </a>
+            </div>
+        </div>
+    {% else %}
+        <!-- Empty Cart -->
+        <div class="card shadow-sm text-center py-5">
+            <div class="card-body">
+                <i class="fa fa-shopping-cart" style="font-size: 8rem; color: #6c757d;"></i>
+                <h3 class="mt-4 text-muted">购物车是空的</h3>
+                <p class="mt-2 text-muted">快去挑选您喜欢的商品吧！</p>
+                <a href="{{ url_for('customer.home') }}" class="btn btn-primary btn-lg mt-3">
+                    <i class="fa fa-shopping-bag me-2"></i> 开始购物
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

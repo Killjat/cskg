@@ -1,0 +1,33 @@
+# 服务端配置
+server:
+  port: 8080
+
+# NATS配置
+nats:
+  url: nats://localhost:4222
+  task_subject: tasks
+  result_subject: results
+
+# 节点列表
+nodes:
+  - id: node-1
+    name: Node 1
+    host: 192.168.1.100
+    port: 22
+    user: root
+    password: password
+    status: ""
+  - id: node-2
+    name: Node 2
+    host: 192.168.1.101
+    port: 22
+    user: root
+    password: password
+    status: ""
+  - id: node-3
+    name: Node 3
+    host: 192.168.1.102
+    port: 22
+    user: root
+    password: password
+    status: ""

@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  # NATS服务器
+  nats:
+    image: nats:latest
+    container_name: nats-server
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    networks:
+      - nodemanage-network
+
+  # 客户端1
+  client1:
+    build:
+      context: .
+    container_name: nodemanage-client-1
+    depends_on:
+      - nats
+    command: ["./nodemanage", "client", "-n", "node-1"]
+    networks:
+      - nodemanage-network
+    environment:
+      - NATS_URL=nats://nats:4222
+
+  # 客户端2
+  client2:
+    build:
+      context: .
+    container_name: nodemanage-client-2
+    depends_on:
+      - nats
+    command: ["./nodemanage", "client", "-n", "node-2"]
+    networks:
+      - nodemanage-network
+    environment:
+      - NATS_URL=nats://nats:4222
+
+  # 客户端3
+  client3:
+    build:
+      context: .
+    container_name: nodemanage-client-3
+    depends_on:
+      - nats
+    command: ["./nodemanage", "client", "-n", "node-3"]
+    networks:
+      - nodemanage-network
+    environment:
+      - NATS_URL=nats://nats:4222
+
+  # 可选：服务端
+  server:
+    build:
+      context: .
+    container_name: nodemanage-server
+    depends_on:
+      - nats
+    command: ["./nodemanage", "server"]
+    networks:
+      - nodemanage-network
+    environment:
+      - NATS_URL=nats://nats:4222
+
+# 网络配置
+networks:
+  nodemanage-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16

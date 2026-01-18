@@ -1,0 +1,79 @@
+╔══════════════════════════════════════════════════════════════╗
+║              ImageGPS - 快速参考卡片                         ║
+╚══════════════════════════════════════════════════════════════╝
+
+【启动服务】
+  cd /Users/jatsmith/CodeBuddy/cskg/imagegps
+  ./start.sh
+  
+  或者: go run main.go
+
+【访问地址】
+  Web界面: http://localhost:8080
+  API接口: http://localhost:8080/api/upload
+  健康检查: http://localhost:8080/api/health
+
+【API使用】
+  curl -X POST \
+    -F "image=@你的图片.jpg" \
+    http://localhost:8080/api/upload
+
+【支持格式】
+  ✓ JPG/JPEG
+  ✓ PNG  
+  ✓ TIFF/TIF
+  ✗ 最大10MB
+
+【主要功能】
+  ✓ 提取GPS经纬度（精确6位小数）
+  ✓ 显示海拔高度
+  ✓ 显示拍摄时间
+  ✓ 显示设备信息
+  ✓ 生成地图链接（Google、百度）
+  ✓ Web拖拽上传界面
+
+【文件结构】
+  imagegps/
+  ├── main.go              主程序
+  ├── handler/upload.go    业务处理
+  ├── utils/exif.go        GPS解析
+  ├── web/templates/       前端界面
+  └── *.md                 文档
+
+【文档】
+  README.md       - 完整技术文档
+  QUICKSTART.md   - 快速开始
+  使用指南.md      - 详细使用说明
+  项目总结.md      - 项目总览
+
+【常用命令】
+  启动:   ./start.sh
+  编译:   go build -o imagegps main.go
+  测试:   ./test_api.sh
+  依赖:   go mod download
+
+【配置修改】
+  端口:     main.go 第18行 → port := ":8080"
+  大小限制:  main.go 第15行 → MaxMultipartMemory
+  文件类型:  handler/upload.go 第22行 → allowedExts
+
+【故障排查】
+  依赖失败 → export GOPROXY=https://goproxy.cn,direct
+  端口占用 → lsof -i :8080
+  无GPS    → 使用手机原始照片测试
+
+【集成示例】
+  Python:   requests.post(url, files={'image': open(path, 'rb')})
+  Curl:     curl -F "image=@photo.jpg" http://localhost:8080/api/upload
+  Node.js:  fetch(url, {method:'POST', body:formData})
+
+【注意事项】
+  ⚠ 图片GPS信息可能暴露位置隐私
+  ✓ 本系统仅在内存中处理，不保存图片
+  ✓ 社交平台下载的图片通常无GPS信息
+
+═══════════════════════════════════════════════════════════════
+  项目路径: /Users/jatsmith/CodeBuddy/cskg/imagegps
+  技术栈:   Go 1.21 + Gin + goexif
+  作者:     CSKG Project Team
+═══════════════════════════════════════════════════════════════

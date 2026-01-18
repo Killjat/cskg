@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>流量监控 - 局域网扫描系统</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 56px;
+        }
+        .traffic-stats {
+            margin-bottom: 30px;
+        }
+        .traffic-table {
+            margin-top: 20px;
+        }
+        .protocol-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .protocol-tcp {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        .protocol-udp {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        .protocol-other {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">局域网扫描系统</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/devices">设备列表</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="/traffic">流量监控</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 流量监控 -->
+    <section class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>流量监控</h1>
+            <a href="/download/traffic.csv" class="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                </svg>
+                导出CSV
+            </a>
+        </div>
+
+        <!-- 流量统计 -->
+        <div class="row traffic-stats">
+            <div class="col-md-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">总流量数</h5>
+                        <h3 class="card-text">{{ traffic|length }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">TCP流量</h5>
+                        <h3 class="card-text">{{ traffic|selectattr('5', 'equalto', 'TCP')|length }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">UDP流量</h5>
+                        <h3 class="card-text">{{ traffic|selectattr('5', 'equalto', 'UDP')|length }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">其他流量</h5>
+                        <h3 class="card-text">{{ traffic|selectattr('5', 'equalto', 'OTHER')|length }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 流量表格 -->
+        <div class="table-responsive traffic-table">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>源IP</th>
+                        <th>源端口</th>
+                        <th>目标IP</th>
+                        <th>目标端口</th>
+                        <th>协议</th>
+                        <th>长度</th>
+                        <th>时间戳</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if traffic %}
+                        {% for packet in traffic %}
+                            <tr>
+                                <td>{{ packet[0] }}</td>
+                                <td>{{ packet[1] }}</td>
+                                <td>{{ packet[3] }}</td>
+                                <td>{{ packet[2] }}</td>
+                                <td>{{ packet[4] }}</td>
+                                <td>
+                                    {% if packet[5] == 'TCP' %}
+                                        <span class="protocol-badge protocol-tcp">TCP</span>
+                                    {% elif packet[5] == 'UDP' %}
+                                        <span class="protocol-badge protocol-udp">UDP</span>
+                                    {% else %}
+                                        <span class="protocol-badge protocol-other">OTHER</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ packet[6] }} bytes</td>
+                                <td>{{ packet[7] }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center">暂无流量数据，请先启动流量监听</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 流量监听提示 -->
+        <div class="alert alert-info mt-4">
+            <h5><strong>💡 提示</strong></h5>
+            <p>要开始监听流量，请在命令行中执行以下命令：</p>
+            <pre class="bg-light p-3 rounded"><code>python main.py traffic</code></pre>
+            <p>流量监听将捕获局域网内的所有数据包，并实时保存到数据库中。</p>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container text-center">
+            <p>&copy; 2024 局域网扫描与流量监控系统. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 自动刷新流量数据
+        setInterval(function() {
+            window.location.reload();
+        }, 30000); // 每30秒刷新一次
+    </script>
+</body>
+</html>

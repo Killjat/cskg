@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网站扫描系统 - FOFA风格</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* 顶部导航栏 */
+        .navbar {
+            background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .navbar h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        /* 导航菜单 */
+        .nav-menu {
+            background: white;
+            padding: 0.5rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        }
+
+        .nav-menu ul {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: #666;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .nav-menu a:hover,
+        .nav-menu a.active {
+            background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);
+            color: white;
+        }
+
+        /* 主容器 */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* 搜索区域 */
+        .search-section {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.8rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #1a73e8;
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
+        }
+
+        .search-filters {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-item label {
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .filter-item select {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        /* 统计区域 */
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1a73e8;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* 结果区域 */
+        .results-section {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        .results-header {
+            padding: 1rem 1.5rem;
+            background: #f8f9fa;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .results-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .results-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .action-btn {
+            background: #f1f3f4;
+            border: 1px solid #ddd;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            background: #e8eaed;
+        }
+
+        /* 结果表格 */
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .results-table th,
+        .results-table td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .results-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .results-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        /* 结果项样式 */
+        .url-link {
+            color: #1a73e8;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .url-link:hover {
+            text-decoration: underline;
+            color: #1557b0;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .tag.framework {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .tag.service {
+            background: #e8f5e8;
+            color: #388e3c;
+        }
+
+        .tag.application {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .tag.language {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-success {
+            background: #e8f5e8;
+            color: #388e3c;
+        }
+
+        .status-info {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        /* 详情模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 1000px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 30px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.3s;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .detail-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .detail-item {
+            display: flex;
+            margin-bottom: 0.75rem;
+        }
+
+        .detail-label {
+            width: 120px;
+            font-weight: 500;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .detail-value {
+            flex: 1;
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        /* 加载状态 */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #1a73e8;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 无数据状态 */
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            color: #999;
+            font-size: 1rem;
+        }
+
+        /* 分页 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            gap: 0.5rem;
+        }
+
+        .page-btn {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .page-btn:hover:not(.disabled) {
+            background: #f8f9fa;
+            border-color: #1a73e8;
+        }
+
+        .page-btn.active {
+            background: #1a73e8;
+            color: white;
+            border-color: #1a73e8;
+        }
+
+        .page-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar">
+        <h1>🔍 网站扫描系统</h1>
+    </nav>
+
+    <!-- 导航菜单 -->
+    <div class="nav-menu">
+        <ul>
+            <li><a href="/" class="active">结果展示</a></li>
+            <li><a href="/scan">扫描任务</a></li>
+        </ul>
+    </div>
+
+    <!-- 主容器 -->
+    <div class="container">
+        <!-- 搜索区域 -->
+        <section class="search-section">
+            <div class="search-bar">
+                <input type="text" class="search-input" placeholder="搜索网站URL、标题、技术栈..." id="searchInput">
+                <button class="search-btn" onclick="searchResults()">搜索</button>
+            </div>
+            <div class="search-filters">
+                <div class="filter-item">
+                    <label for="frameworkFilter">框架:</label>
+                    <select id="frameworkFilter">
+                        <option value="">全部</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="languageFilter">语言:</label>
+                    <select id="languageFilter">
+                        <option value="">全部</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="loginFilter">登录框:</label>
+                    <select id="loginFilter">
+                        <option value="">全部</option>
+                        <option value="true">有</option>
+                        <option value="false">无</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- 统计区域 -->
+        <section class="stats-section">
+            <div class="stat-card">
+                <div class="stat-number" id="totalCount">0</div>
+                <div class="stat-label">总网站数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="frameworkCount">0</div>
+                <div class="stat-label">识别框架</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="languageCount">0</div>
+                <div class="stat-label">编程语言</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="loginCount">0</div>
+                <div class="stat-label">含登录框</div>
+            </div>
+        </section>
+
+        <!-- 结果区域 -->
+        <section class="results-section">
+            <div class="results-header">
+                <div class="results-title">扫描结果</div>
+                <div class="results-actions">
+                    <button class="action-btn" onclick="refreshResults()">刷新</button>
+                    <button class="action-btn" onclick="exportCSV()">导出CSV</button>
+                </div>
+            </div>
+            
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>URL</th>
+                        <th>标题</th>
+                        <th>框架</th>
+                        <th>服务</th>
+                        <th>应用</th>
+                        <th>语言</th>
+                        <th>ICP备案</th>
+                        <th>登录框</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsTableBody">
+                    <tr>
+                        <td colspan="9" class="loading">正在加载扫描结果...</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- 分页 -->
+            <div class="pagination" id="pagination">
+                <!-- 分页按钮将通过JavaScript动态生成 -->
+            </div>
+        </section>
+    </div>
+
+    <!-- 详情模态框 -->
+    <div class="modal" id="detailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">网站详情</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- 详情内容将通过JavaScript动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allResults = [];
+        let filteredResults = [];
+        let currentPage = 1;
+        const pageSize = 10;
+
+        // 页面加载时初始化
+        window.onload = function() {
+            loadResults();
+            // 每30秒自动刷新一次结果
+            setInterval(loadResults, 30000);
+        };
+
+        // 加载扫描结果
+        async function loadResults() {
+            try {
+                const response = await fetch('/api/results');
+                allResults = await response.json();
+                
+                // 更新统计信息
+                updateStats();
+                
+                // 生成筛选选项
+                generateFilters();
+                
+                // 重新应用当前的筛选条件
+                const keyword = document.getElementById('searchInput').value.toLowerCase();
+                const frameworkFilter = document.getElementById('frameworkFilter').value;
+                const languageFilter = document.getElementById('languageFilter').value;
+                const loginFilter = document.getElementById('loginFilter').value;
+                
+                // 应用筛选
+                filteredResults = allResults.filter(result => {
+                    // 关键词搜索
+                    const matchesKeyword = !keyword || 
+                        result.url.toLowerCase().includes(keyword) ||
+                        result.title.toLowerCase().includes(keyword) ||
+                        result.frameworks.some(f => f.toLowerCase().includes(keyword)) ||
+                        result.programming_languages.some(l => l.toLowerCase().includes(keyword));
+
+                    // 框架筛选
+                    const matchesFramework = !frameworkFilter || 
+                        result.frameworks.includes(frameworkFilter);
+
+                    // 语言筛选
+                    const matchesLanguage = !languageFilter || 
+                        result.programming_languages.includes(languageFilter);
+
+                    // 登录框筛选
+                    const matchesLogin = !loginFilter || 
+                        result.has_login_form.toString() === loginFilter;
+
+                    return matchesKeyword && matchesFramework && matchesLanguage && matchesLogin;
+                });
+                
+                // 显示结果
+                displayResults();
+            } catch (error) {
+                console.error('加载结果失败:', error);
+                document.getElementById('resultsTableBody').innerHTML = `
+                    <tr>
+                        <td colspan="9" class="no-data">❌ 加载结果失败: ${error.message}</td>
+                    </tr>
+                `;
+            }
+        }
+
+        // 更新统计信息
+        function updateStats() {
+            const total = allResults.length;
+            const frameworks = new Set();
+            const languages = new Set();
+            let loginCount = 0;
+
+            allResults.forEach(result => {
+                result.frameworks.forEach(f => frameworks.add(f));
+                result.programming_languages.forEach(l => languages.add(l));
+                if (result.has_login_form) loginCount++;
+            });
+
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('frameworkCount').textContent = frameworks.size;
+            document.getElementById('languageCount').textContent = languages.size;
+            document.getElementById('loginCount').textContent = loginCount;
+        }
+
+        // 生成筛选选项
+        function generateFilters() {
+            const frameworks = new Set();
+            const languages = new Set();
+
+            allResults.forEach(result => {
+                result.frameworks.forEach(f => frameworks.add(f));
+                result.programming_languages.forEach(l => languages.add(l));
+            });
+
+            // 框架筛选
+            const frameworkFilter = document.getElementById('frameworkFilter');
+            frameworks.forEach(f => {
+                const option = document.createElement('option');
+                option.value = f;
+                option.textContent = f;
+                frameworkFilter.appendChild(option);
+            });
+
+            // 语言筛选
+            const languageFilter = document.getElementById('languageFilter');
+            languages.forEach(l => {
+                const option = document.createElement('option');
+                option.value = l;
+                option.textContent = l;
+                languageFilter.appendChild(option);
+            });
+        }
+
+        // 显示结果
+        function displayResults() {
+            const tbody = document.getElementById('resultsTableBody');
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            const pageResults = filteredResults.slice(start, end);
+
+            if (pageResults.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="no-data">🔍 没有找到匹配的结果</td>
+                    </tr>
+                `;
+            } else {
+                tbody.innerHTML = pageResults.map(result => `
+                    <tr>
+                        <td>
+                            <a href="${result.url}" class="url-link" target="_blank">${result.url}</a>
+                        </td>
+                        <td>${result.title || '-'}</td>
+                        <td>
+                            ${result.frameworks.map(f => `<span class="tag framework">${f}</span>`).join('') || '-'}
+                        </td>
+                        <td>
+                            ${result.services.map(s => `<span class="tag service">${s}</span>`).join('') || '-'}
+                        </td>
+                        <td>
+                            ${result.applications.map(a => `<span class="tag application">${a}</span>`).join('') || '-'}
+                        </td>
+                        <td>
+                            ${result.programming_languages.map(l => `<span class="tag language">${l}</span>`).join('') || '-'}
+                        </td>
+                        <td>
+                            ${result.icp ? `<span class="status-info">${result.icp}</span>` : '-'}
+                        </td>
+                        <td>
+                            <span class="status-badge ${result.has_login_form ? 'status-success' : 'status-info'}">
+                                ${result.has_login_form ? '有' : '无'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="action-btn" onclick="showDetail(${filteredResults.indexOf(result)})">详情</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            // 更新分页
+            updatePagination();
+        }
+
+        // 更新分页
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredResults.length / pageSize);
+            const pagination = document.getElementById('pagination');
+
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+
+            let paginationHTML = '';
+
+            // 上一页
+            paginationHTML += `<button class="page-btn ${currentPage === 1 ? 'disabled' : ''}" onclick="changePage(${currentPage - 1})">上一页</button>`;
+
+            // 页码按钮
+            for (let i = 1; i <= totalPages; i++) {
+                paginationHTML += `<button class="page-btn ${currentPage === i ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+            }
+
+            // 下一页
+            paginationHTML += `<button class="page-btn ${currentPage === totalPages ? 'disabled' : ''}" onclick="changePage(${currentPage + 1})">下一页</button>`;
+
+            pagination.innerHTML = paginationHTML;
+        }
+
+        // 切换页面
+        function changePage(page) {
+            const totalPages = Math.ceil(filteredResults.length / pageSize);
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            displayResults();
+        }
+
+        // 搜索结果
+        function searchResults() {
+            const keyword = document.getElementById('searchInput').value.toLowerCase();
+            const frameworkFilter = document.getElementById('frameworkFilter').value;
+            const languageFilter = document.getElementById('languageFilter').value;
+            const loginFilter = document.getElementById('loginFilter').value;
+
+            filteredResults = allResults.filter(result => {
+                // 关键词搜索
+                const matchesKeyword = !keyword || 
+                    result.url.toLowerCase().includes(keyword) ||
+                    result.title.toLowerCase().includes(keyword) ||
+                    result.frameworks.some(f => f.toLowerCase().includes(keyword)) ||
+                    result.programming_languages.some(l => l.toLowerCase().includes(keyword));
+
+                // 框架筛选
+                const matchesFramework = !frameworkFilter || 
+                    result.frameworks.includes(frameworkFilter);
+
+                // 语言筛选
+                const matchesLanguage = !languageFilter || 
+                    result.programming_languages.includes(languageFilter);
+
+                // 登录框筛选
+                const matchesLogin = !loginFilter || 
+                    result.has_login_form.toString() === loginFilter;
+
+                return matchesKeyword && matchesFramework && matchesLanguage && matchesLogin;
+            });
+
+            currentPage = 1;
+            displayResults();
+        }
+
+        // 刷新结果
+        function refreshResults() {
+            // 重置筛选条件
+            document.getElementById('searchInput').value = '';
+            document.getElementById('frameworkFilter').value = '';
+            document.getElementById('languageFilter').value = '';
+            document.getElementById('loginFilter').value = '';
+
+            filteredResults = [...allResults];
+            currentPage = 1;
+            displayResults();
+        }
+
+        // 显示详情
+        function showDetail(index) {
+            const result = filteredResults[index];
+            document.getElementById('modalTitle').textContent = result.title || result.url;
+
+            const modalBody = document.getElementById('modalBody');
+            modalBody.innerHTML = `
+                <div class="detail-section">
+                    <h3 class="detail-title">基本信息</h3>
+                    <div class="detail-item">
+                        <span class="detail-label">URL:</span>
+                        <span class="detail-value"><a href="${result.url}" class="url-link" target="_blank">${result.url}</a></span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">标题:</span>
+                        <span class="detail-value">${result.title || '-'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">网站名称:</span>
+                        <span class="detail-value">${result.site_name || '-'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">ICP备案:</span>
+                        <span class="detail-value">${result.icp || '-'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">登录框:</span>
+                        <span class="detail-value">${result.has_login_form ? '有' : '无'}</span>
+                    </div>
+                </div>
+
+                <div class="detail-section">
+                    <h3 class="detail-title">技术栈</h3>
+                    <div class="detail-item">
+                        <span class="detail-label">框架:</span>
+                        <span class="detail-value">${result.frameworks.map(f => `<span class="tag framework">${f}</span>`).join('') || '-'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">服务:</span>
+                        <span class="detail-value">${result.services.map(s => `<span class="tag service">${s}</span>`).join('') || '-'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">应用:</span>
+                        <span class="detail-value">${result.applications.map(a => `<span class="tag application">${a}</span>`).join('') || '-'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">编程语言:</span>
+                        <span class="detail-value">${result.programming_languages.map(l => `<span class="tag language">${l}</span>`).join('') || '-'}</span>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('detailModal').style.display = 'block';
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            document.getElementById('detailModal').style.display = 'none';
+        }
+
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            const modal = document.getElementById('detailModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        // 导出CSV
+        function exportCSV() {
+            const headers = ['URL', '标题', '网站名称', '框架', '服务', '应用', '编程语言', 'ICP备案', '登录框'];
+            const csvContent = [
+                headers.join(','),
+                ...filteredResults.map(result => [
+                    `"${result.url}"`,
+                    `"${result.title || ''}"`,
+                    `"${result.site_name || ''}"`,
+                    `"${result.frameworks.join(';')}"`,
+                    `"${result.services.join(';')}"`,
+                    `"${result.applications.join(';')}"`,
+                    `"${result.programming_languages.join(';')}"`,
+                    `"${result.icp || ''}"`,
+                    result.has_login_form
+                ].join(','))
+            ].join('\n');
+
+            const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `site_scan_results_${new Date().toISOString().slice(0, 10)}.csv`;
+            link.click();
+        }
+
+        // 更新统计信息
+        function updateStats() {
+            document.getElementById('totalCount').textContent = allResults.length;
+            
+            // 计算框架数量
+            const frameworks = new Set();
+            allResults.forEach(result => {
+                result.frameworks.forEach(f => frameworks.add(f));
+            });
+            document.getElementById('frameworkCount').textContent = frameworks.size;
+            
+            // 计算语言数量
+            const languages = new Set();
+            allResults.forEach(result => {
+                result.programming_languages.forEach(l => languages.add(l));
+            });
+            document.getElementById('languageCount').textContent = languages.size;
+            
+            // 计算含登录框的网站数量
+            const loginCount = allResults.filter(result => result.has_login_form).length;
+            document.getElementById('loginCount').textContent = loginCount;
+        }
+
+        // 生成筛选选项
+        function generateFilters() {
+            const frameworks = new Set();
+            const languages = new Set();
+
+            allResults.forEach(result => {
+                result.frameworks.forEach(f => frameworks.add(f));
+                result.programming_languages.forEach(l => languages.add(l));
+            });
+
+            // 框架筛选
+            const frameworkFilter = document.getElementById('frameworkFilter');
+            frameworks.forEach(f => {
+                const option = document.createElement('option');
+                option.value = f;
+                option.textContent = f;
+                frameworkFilter.appendChild(option);
+            });
+
+            // 语言筛选
+            const languageFilter = document.getElementById('languageFilter');
+            languages.forEach(l => {
+                const option = document.createElement('option');
+                option.value = l;
+                option.textContent = l;
+                languageFilter.appendChild(option);
+            });
+        }
+    </script>
+</body>
+</html>

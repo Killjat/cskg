@@ -1,0 +1,188 @@
+{
+  "kafka_topics": {
+    "system_task": {
+      "description": "系统生成的任务消息",
+      "message_format": {
+        "id": "string",
+        "creator": "string",
+        "type": "string",
+        "protocol": "string",
+        "targets": ["string"],
+        "port_range": "string",
+        "status": "string",
+        "created_at": "string",
+        "scheduled_at": "string",
+        "started_at": "string",
+        "completed_at": "string",
+        "scan_result_index": "string",
+        "scan_result_keys": ["string"],
+        "error_message": "string"
+      },
+      "example": {
+        "id": "task_1234567890",
+        "creator": "system",
+        "type": "port_scan",
+        "protocol": "tcp",
+        "targets": ["192.168.1.1", "192.168.1.2"],
+        "port_range": "1-1000",
+        "status": "pending",
+        "created_at": "2026-01-15T14:30:00Z",
+        "scheduled_at": "2026-01-15T14:35:00Z",
+        "started_at": null,
+        "completed_at": null,
+        "scan_result_index": null,
+        "scan_result_keys": null,
+        "error_message": null
+      }
+    },
+    "normal_task": {
+      "description": "正常用户创建的任务消息",
+      "message_format": {
+        "id": "string",
+        "creator": "string",
+        "type": "string",
+        "protocol": "string",
+        "targets": ["string"],
+        "port_range": "string",
+        "status": "string",
+        "created_at": "string",
+        "scheduled_at": "string",
+        "started_at": "string",
+        "completed_at": "string",
+        "scan_result_index": "string",
+        "scan_result_keys": ["string"],
+        "error_message": "string"
+      },
+      "example": {
+        "id": "task_0987654321",
+        "creator": "user123",
+        "type": "banner_grab",
+        "protocol": "tcp",
+        "targets": ["10.0.0.1"],
+        "port_range": "22,80,443",
+        "status": "pending",
+        "created_at": "2026-01-15T14:40:00Z",
+        "scheduled_at": "2026-01-15T14:45:00Z",
+        "started_at": null,
+        "completed_at": null,
+        "scan_result_index": null,
+        "scan_result_keys": null,
+        "error_message": null
+      }
+    }
+  },
+  "scan_result_format": {
+    "description": "扫描结果数据结构（存储在Elasticsearch中）",
+    "format": {
+      "ip": "string",
+      "port": "number",
+      "protocol": "string",
+      "service": "string",
+      "app": "string",
+      "banner": "string",
+      "status": "string",
+      "created_at": "string",
+      "task_id": "string"
+    },
+    "example": {
+      "ip": "192.168.1.1",
+      "port": 22,
+      "protocol": "tcp",
+      "service": "ssh",
+      "app": "OpenSSH",
+      "banner": "SSH-2.0-OpenSSH_8.0\n--- http PROBE RESPONSE ---\n\n--- ssh PROBE RESPONSE ---\nSSH-2.0-OpenSSH_8.0",
+      "status": "open",
+      "created_at": "2026-01-15T14:50:00Z",
+      "task_id": "task_1234567890"
+    }
+  },
+  "scanner_config": {
+    "description": "扫描器配置",
+    "default_ports_config": {
+      "description": "扫描器默认端口配置，从配置文件读取",
+      "config_path": "config/config.yaml",
+      "config_section": "scan",
+      "config_key": "default_ports",
+      "current_value": "80,443,8080,22,3389,3306,5432,1433",
+      "implementation": "internal/scan/scanner.go",
+      "behavior": "当任务未指定端口范围时，使用配置文件中的默认端口列表"
+    },
+    "protocol_handling": {
+      "description": "扫描器协议处理逻辑",
+      "implementation": "internal/scan/scanner.go",
+      "behavior": {
+        "tcp": "仅使用TCP协议进行端口扫描",
+        "udp": "仅使用UDP协议进行端口扫描",
+        "all": "同时使用TCP和UDP协议进行端口扫描"
+      },
+      "handling_flow": "任务下发时指定协议类型 -> 扫描器根据协议类型决定扫描策略 -> 为每种协议创建独立的扫描协程 -> 扫描结果分别记录协议类型"
+    },
+    "service_detection": {
+      "description": "基于多探测包的服务识别",
+      "implementation": "internal/scan/scanner.go",
+      "enhanced_detection_logic": {
+        "description": "增强的服务识别逻辑，不依赖端口猜测",
+        "detection_flow": "端口开放 -> 抓取初始Banner -> 发送所有默认探测包 -> 分析所有响应 -> 确定最佳匹配应用 -> 根据应用推断服务类型",
+        "key_improvement": "对所有开放端口发送全部探测包，解决非标准端口服务识别问题"
+      },
+      "probe_packets": {
+        "http": "GET / HTTP/1.1请求",
+        "ssh": "SSH协议握手包",
+        "ftp": "FTP USER命令",
+        "smtp": "SMTP EHLO命令",
+        "pop3": "POP3 USER命令",
+        "imap": "IMAP LOGIN命令",
+        "mysql": "MySQL握手包",
+        "postgresql": "PostgreSQL握手包",
+        "mssql": "MSSQL握手包"
+      },
+      "app_to_service_mapping": {
+        "description": "根据检测到的应用类型映射到服务类型",
+        "mapping_logic": "应用识别优先，服务类型由应用类型推断",
+        "example_mappings": {
+          "Apache": "http",
+          "Nginx": "http",
+          "OpenSSH": "ssh",
+          "MySQL": "mysql",
+          "PostgreSQL": "postgresql"
+        }
+      },
+      "confidence_based_detection": {
+        "description": "基于置信度的服务识别",
+        "confidence_levels": {
+          "high": "90-100%，明确的协议响应",
+          "medium": "70-89%，部分匹配的响应",
+          "low": "50-69%，模糊匹配或默认情况"
+        },
+        "decision_logic": "选择置信度最高的应用作为最终识别结果"
+      }
+    },
+    "banner_handling": {
+      "description": "增强的Banner处理逻辑",
+      "implementation": "internal/scan/scanner.go",
+      "banner_content": {
+        "description": "Banner信息包含初始banner和所有探测响应的完整数据",
+        "data_type": "二进制数据转换为字符串",
+        "collection_logic": "初始连接banner + 所有探测包响应",
+        "format": "字符串格式，包含分隔符区分不同来源"
+      },
+      "binary_processing": {
+        "description": "二进制数据处理",
+        "conversion": "所有二进制响应数据直接转换为string类型",
+        "buffer_size": "2048字节，可接收大量响应数据",
+        "collection_strategy": "读取所有可用数据，直到连接关闭或超时"
+      },
+      "banner_construction": {
+        "initial_banner": "初始连接时服务器发送的banner数据",
+        "probe_responses": "所有探测包的响应数据",
+        "separation": "使用--- PROBE RESPONSE ---分隔符区分不同来源"
+      }
+    },
+    "config_structure": {
+      "timeout": "扫描超时时间(秒)",
+      "threads": "扫描线程数",
+      "retries": "重试次数",
+      "default_ports": "默认扫描端口，逗号分隔"
+    }
+  }
+}

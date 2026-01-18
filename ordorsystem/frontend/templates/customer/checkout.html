@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}结算 - 网吧点餐系统{% endblock %}
+
+{% block navigation %}
+    {% include 'customer/navigation.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center mb-5">订单结算</h1>
+    
+    <div class="row">
+        <!-- Order Summary -->
+        <div class="col-md-6">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">订单明细</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th scope="col">商品</th>
+                                <th scope="col" class="text-end">数量</th>
+                                <th scope="col" class="text-end">小计</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in products %}
+                                <tr>
+                                    <td>{{ item.product.name }}</td>
+                                    <td class="text-end">{{ item.quantity }}</td>
+                                    <td class="text-end">¥{{ item.subtotal }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th scope="row" class="text-end">总计：</th>
+                                <td class="text-end">{{ products|length }} 件商品</td>
+                                <td class="text-end fw-bold text-primary">¥{{ total_amount }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Checkout Form -->
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">订单信息</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('customer.checkout') }}">
+                        <div class="mb-4">
+                            <label for="table_number" class="form-label">桌号/机器号 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="table_number" name="table_number" required placeholder="请输入您的桌号或机器号">
+                            <div class="form-text">请准确输入您的桌号或机器号，以便我们将商品送到您的座位。</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="notes" class="form-label">备注信息</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="如有特殊要求，请在此说明"></textarea>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label">支付方式</label>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="payment_method" id="cash" value="cash" checked>
+                                <label class="form-check-label" for="cash">
+                                    现金支付
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="payment_method" id="wechat" value="wechat">
+                                <label class="form-check-label" for="wechat">
+                                    微信支付
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" id="alipay" value="alipay">
+                                <label class="form-check-label" for="alipay">
+                                    支付宝
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fa fa-check me-2"></i> 提交订单
+                            </button>
+                            <a href="{{ url_for('customer.cart') }}" class="btn btn-outline-primary">
+                                <i class="fa fa-arrow-left me-2"></i> 返回购物车
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

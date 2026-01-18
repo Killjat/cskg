@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设备详情 - 局域网扫描系统</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 56px;
+        }
+        .device-info {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .port-table {
+            margin-top: 20px;
+        }
+        .back-btn {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">局域网扫描系统</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/devices">设备列表</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/traffic">流量监控</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 设备详情 -->
+    <section class="container mt-5">
+        <a href="/devices" class="btn btn-secondary back-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+            </svg>
+            返回设备列表
+        </a>
+
+        <h1>设备详情</h1>
+        
+        <!-- 设备基本信息 -->
+        <div class="device-info">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>基本信息</h5>
+                    <ul class="list-unstyled">
+                        <li><strong>设备ID:</strong> {{ device[0] }}</li>
+                        <li><strong>IP地址:</strong> {{ device[1] }}</li>
+                        <li><strong>MAC地址:</strong> {{ device[2] or '-' }}</li>
+                        <li><strong>主机名:</strong> {{ device[3] or '-' }}</li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>状态信息</h5>
+                    <ul class="list-unstyled">
+                        <li><strong>状态:</strong> {{ device[4]|upper }}</li>
+                        <li><strong>扫描时间:</strong> {{ device[5] }}</li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>操作</h5>
+                    <a href="/download/device/{{ device[0] }}/ports.csv" class="btn btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+                            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                        </svg>
+                        导出端口CSV
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 端口信息 -->
+        <div>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>开放端口列表</h2>
+                <span class="badge bg-primary">共 {{ ports|length }} 个端口</span>
+            </div>
+
+            <div class="table-responsive port-table">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>端口</th>
+                            <th>协议</th>
+                            <th>状态</th>
+                            <th>服务</th>
+                            <th>应用</th>
+                            <th>扫描时间</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if ports %}
+                            {% for port in ports %}
+                                <tr>
+                                    <td>{{ port[0] }}</td>
+                                    <td>{{ port[2] }}</td>
+                                    <td>{{ port[3]|upper }}</td>
+                                    <td>{{ port[4]|upper }}</td>
+                                    <td>{{ port[5] or '-' }}</td>
+                                    <td>{{ port[6] or '-' }}</td>
+                                    <td>{{ port[7] }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center">暂无端口数据</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container text-center">
+            <p>&copy; 2024 局域网扫描与流量监控系统. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+# 二进制文件
+imagegps
+imagegps-*
+*.exe
+
+# Go
+go.sum
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 临时文件
+*.log
+*.tmp
+
+# 上传的图片（如果有本地保存）
+uploads/
+temp/
+
+# 操作系统
+.DS_Store
+Thumbs.db

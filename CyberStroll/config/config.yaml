@@ -1,0 +1,44 @@
+# CyberStroll 配置文件
+
+# 系统配置
+system:
+  name: "CyberStroll"
+  version: "1.0.0"
+  log_level: "debug"
+
+# Kafka 配置
+kafka:
+  brokers: ["192.168.1.11:9093"]
+  group_id: "cyberstroll_scan_group"
+  topics:
+    system_task: "system_task"
+    normal_task: "normal_task"
+  consumer:
+    auto_offset_reset: "latest"
+    session_timeout: "30s"
+    heartbeat_interval: "10s"
+  producer:
+    acks: "all"
+    retries: 3
+    linger_ms: 100
+
+# Elasticsearch 配置
+elasticsearch:
+  addresses: ["http://192.168.1.11:9200"]
+  username: ""
+  password: ""
+  index:
+    scan_result: "scan_result"
+  timeout: "30s"
+
+# 扫描配置
+scan:
+  timeout: 3  # 扫描超时时间(秒)
+  threads: 20  # 扫描线程数
+  retries: 2  # 重试次数
+  default_ports: "80,443,8080,22,3389,3306,5432,1433,1883"  # 默认扫描端口
+
+# 任务管理配置
+task:
+  max_concurrent_tasks: 200  # 最大并发任务数
+  task_expire_time: 7200  # 任务过期时间(秒)

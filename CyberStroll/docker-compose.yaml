@@ -1,0 +1,118 @@
+version: '3'
+
+services:
+  # Kafka服务
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    ports:
+      - "9093:9093"
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9093
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://192.168.1.11:9093
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
+      - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+      - KAFKA_DEFAULT_REPLICATION_FACTOR=1
+      - KAFKA_NUM_PARTITIONS=1
+    depends_on:
+      - zookeeper
+    networks:
+      - cyberstroll-network
+
+  # ZooKeeper服务（Kafka依赖）
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    ports:
+      - "2182:2181"
+    environment:
+      - ZOOKEEPER_CLIENT_PORT=2181
+      - ZOOKEEPER_TICK_TIME=2000
+    networks:
+      - cyberstroll-network
+
+  # Elasticsearch服务
+  elasticsearch:
+    image: elasticsearch:8.8.0
+    container_name: elasticsearch
+    ports:
+      - "9200:9200"
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false  # 开发环境禁用安全功能
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - cyberstroll-network
+
+  # Kibana服务（可选，用于可视化）
+  kibana:
+    image: kibana:8.8.0
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - cyberstroll-network
+
+  # 扫描节点服务1
+  scan_node_1:
+    build: .
+    container_name: cyberstroll_scan_node_1
+    depends_on:
+      - kafka
+      - elasticsearch
+    environment:
+      - KAFKA_BROKERS=kafka:9093
+      - ELASTICSEARCH_ADDRESSES=http://elasticsearch:9200
+    networks:
+      - cyberstroll-network
+    restart: unless-stopped
+    volumes:
+      - ./config:/app/config:ro
+
+  # 扫描节点服务2
+  scan_node_2:
+    build: .
+    container_name: cyberstroll_scan_node_2
+    depends_on:
+      - kafka
+      - elasticsearch
+    environment:
+      - KAFKA_BROKERS=kafka:9093
+      - ELASTICSEARCH_ADDRESSES=http://elasticsearch:9200
+    networks:
+      - cyberstroll-network
+    restart: unless-stopped
+    volumes:
+      - ./config:/app/config:ro
+
+  # 扫描节点服务3
+  scan_node_3:
+    build: .
+    container_name: cyberstroll_scan_node_3
+    depends_on:
+      - kafka
+      - elasticsearch
+    environment:
+      - KAFKA_BROKERS=kafka:9093
+      - ELASTICSEARCH_ADDRESSES=http://elasticsearch:9200
+    networks:
+      - cyberstroll-network
+    restart: unless-stopped
+    volumes:
+      - ./config:/app/config:ro
+
+volumes:
+  es_data:
+    driver: local
+
+networks:
+  cyberstroll-network:
+    driver: bridge

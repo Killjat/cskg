@@ -1,0 +1,57 @@
+# Packetbeat configuration for honeypot system
+
+# Network device to capture traffic from
+# Set to "any" to capture on all interfaces
+packetbeat.interfaces.device: any
+
+# Protocols to capture and analyze
+packetbeat.protocols:
+  # Modbus protocol (port 502)
+  - type: modbus
+    ports: [502]
+  
+  # MySQL protocol (port 3306)
+  - type: mysql
+    ports: [3306]
+  
+  # Redis protocol (port 6379)
+  - type: redis
+    ports: [6379]
+  
+  # Kafka protocol (port 9092)
+  - type: kafka
+    ports: [9092]
+  
+  # HTTP protocol (for web interfaces)
+  - type: http
+    ports: [80, 443, 9999, 8888, 8080, 5000, 5001]
+  
+  # TCP protocol for other services
+  - type: tcp
+    ports: [502, 3306, 6379, 9092, 9999, 8888, 8080, 5000, 5001]
+
+# Output configuration
+# Send data to Elasticsearch (optional)
+#output.elasticsearch:
+#  hosts: ["localhost:9200"]
+
+# Send data to Logstash (optional)
+#output.logstash:
+#  hosts: ["localhost:5044"]
+
+# File output for local logging
+output.file:
+  path: "/Users/jatsmith/CodeBuddy/cskg/appcopy/honeypot_system/logs"
+  filename: "packetbeat.log"
+  rotate_every_kb: 10000
+  number_of_files: 7
+
+# Logging configuration
+logging.level: info
+logging.to_files: true
+logging.files:
+  path: "/Users/jatsmith/CodeBuddy/cskg/appcopy/honeypot_system/logs"
+  name: "packetbeat.log"
+  rotateeverybytes: 10485760 # 10MB
+  keepfiles: 7
+  permissions: 0644

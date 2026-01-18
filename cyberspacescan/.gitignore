@@ -1,0 +1,30 @@
+# 编译输出
+scanner
+scanner.exe
+*.exe
+*.dll
+*.so
+*.dylib
+
+# 测试和临时文件
+*.test
+*.out
+*.log
+
+# 扫描结果
+results/
+scan_result_*
+
+# Go 依赖
+vendor/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

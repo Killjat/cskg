@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}管理后台 - 网吧点餐系统{% endblock %}
+
+{% block navigation %}
+    {% include 'admin/navigation.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Page Title -->
+    <h1 class="mb-4">管理仪表盘</h1>
+    
+    <!-- Stats Cards -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 mb-5">
+        <!-- Total Orders -->
+        <div class="col">
+            <div class="card shadow-sm bg-primary text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">总订单数</h5>
+                            <h2 class="card-text mt-2">{{ total_orders }}</h2>
+                        </div>
+                        <div>
+                            <i class="fa fa-shopping-cart" style="font-size: 3rem; opacity: 0.7;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total Products -->
+        <div class="col">
+            <div class="card shadow-sm bg-success text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">总商品数</h5>
+                            <h2 class="card-text mt-2">{{ total_products }}</h2>
+                        </div>
+                        <div>
+                            <i class="fa fa-archive" style="font-size: 3rem; opacity: 0.7;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total Users -->
+        <div class="col">
+            <div class="card shadow-sm bg-info text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">总用户数</h5>
+                            <h2 class="card-text mt-2">{{ total_users }}</h2>
+                        </div>
+                        <div>
+                            <i class="fa fa-users" style="font-size: 3rem; opacity: 0.7;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total Categories -->
+        <div class="col">
+            <div class="card shadow-sm bg-warning text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">商品分类</h5>
+                            <h2 class="card-text mt-2">{{ total_categories }}</h2>
+                        </div>
+                        <div>
+                            <i class="fa fa-folder-open" style="font-size: 3rem; opacity: 0.7;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Orders -->
+    <div class="card shadow-sm mb-5">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">最近订单</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">订单号</th>
+                            <th scope="col">顾客</th>
+                            <th scope="col" class="text-end">金额</th>
+                            <th scope="col" class="text-center">状态</th>
+                            <th scope="col" class="text-center">下单时间</th>
+                            <th scope="col" class="text-center">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if recent_orders %}
+                            {% for order in recent_orders %}
+                                <tr>
+                                    <td>{{ order.order_no }}</td>
+                                    <td>{{ order.user.username }}</td>
+                                    <td class="text-end">¥{{ order.total_amount }}</td>
+                                    <td class="text-center">
+                                        {% if order.status == 'pending' %}
+                                            <span class="badge bg-warning">待支付</span>
+                                        {% elif order.status == 'paid' %}
+                                            <span class="badge bg-info">已支付</span>
+                                        {% elif order.status == 'preparing' %}
+                                            <span class="badge bg-primary">制作中</span>
+                                        {% elif order.status == 'completed' %}
+                                            <span class="badge bg-success">已完成</span>
+                                        {% elif order.status == 'cancelled' %}
+                                            <span class="badge bg-danger">已取消</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td class="text-center">
+                                        <a href="{{ url_for('admin.order_detail', order_id=order.id) }}" class="btn btn-primary btn-sm">
+                                            <i class="fa fa-eye"></i> 查看
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">暂无订单数据</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-end mt-3">
+                <a href="{{ url_for('admin.orders') }}" class="btn btn-outline-primary">
+                    <i class="fa fa-arrow-right me-2"></i> 查看全部订单
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h5 class="mb-0">快捷操作</h5>
+        </div>
+        <div class="card-body">
+            <div class="row row-cols-1 row-cols-md-3 g-3">
+                <div class="col">
+                    <a href="{{ url_for('admin.add_product') }}" class="btn btn-outline-primary btn-lg w-100">
+                        <i class="fa fa-plus me-2"></i> 添加商品
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{{ url_for('admin.add_category') }}" class="btn btn-outline-success btn-lg w-100">
+                        <i class="fa fa-folder-plus me-2"></i> 添加分类
+                    </a>
+                </div>
+                <div class="col">
+                    <a href="{{ url_for('admin.users') }}" class="btn btn-outline-info btn-lg w-100">
+                        <i class="fa fa-user-plus me-2"></i> 管理用户
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

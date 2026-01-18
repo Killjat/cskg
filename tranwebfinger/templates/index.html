@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>指纹仪表盘 - 新获得的指纹</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .stat-card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            min-width: 200px;
+            flex: 1;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        .stat-label {
+            font-size: 1.1em;
+            margin-top: 5px;
+            color: #666;
+        }
+        
+        .fingerprints-section {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2em;
+            text-align: center;
+        }
+        
+        .fingerprint-table-container {
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+        
+        .fingerprint-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .fingerprint-table th,
+        .fingerprint-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .fingerprint-table th {
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9em;
+        }
+        
+        .fingerprint-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .fingerprint-table tr:hover {
+            background-color: #e8f5e8;
+        }
+        
+        .keywords-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        .keyword {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            border: 1px solid #c8e6c9;
+        }
+        
+        .no-data {
+            text-align: center;
+            color: #666;
+            padding: 30px;
+            font-style: italic;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .refresh-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+        
+        .refresh-btn:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>指纹仪表盘</h1>
+            <p class="subtitle">展示新获得的指纹信息</p>
+        </header>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="total-fingerprints">0</div>
+                <div class="stat-label">总指纹数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="ml-fingerprints">0</div>
+                <div class="stat-label">机器学习所得指纹</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-categories">0</div>
+                <div class="stat-label">技术类别</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="last-update">--</div>
+                <div class="stat-label">最后更新</div>
+            </div>
+        </div>
+        
+        <div class="fingerprints-section">
+            <h2>新获得的指纹</h2>
+            <button class="refresh-btn" onclick="loadFingerprints()">刷新数据</button>
+            <div class="fingerprint-table-container">
+                <table class="fingerprint-table" id="fingerprint-table">
+                    <thead>
+                        <tr>
+                            <th>URL</th>
+                            <th>指纹名字</th>
+                            <th>指纹关键字</th>
+                            <th>类别</th>
+                            <th>描述</th>
+                            <th>响应头模式</th>
+                            <th>HTML模式</th>
+                            <th>脚本模式</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fingerprint-table-body">
+                        <!-- 表格内容将通过JavaScript动态生成 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>指纹仪表盘 © 2026</p>
+        </div>
+    </div>
+    
+    <script>
+        // 加载指纹数据
+        function loadFingerprints() {
+            fetch('/api/new_fingerprints')
+                .then(response => response.json())
+                .then(data => {
+                    displayFingerprints(data);
+                    updateStats(data);
+                })
+                .catch(error => console.error('Error loading fingerprints:', error));
+        }
+        
+        // 显示指纹
+        function displayFingerprints(fingerprints) {
+            const tbody = document.getElementById('fingerprint-table-body');
+            
+            if (fingerprints.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="no-data">暂无新获得的指纹</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = fingerprints.map(fingerprint => `
+                <tr>
+                    <td>${fingerprint.url || 'N/A'}</td>
+                    <td>${fingerprint.name}</td>
+                    <td>
+                        <div class="keywords-list">
+                            ${fingerprint.keywords.map(keyword => `<span class="keyword">${keyword}</span>`).join('')}
+                        </div>
+                    </td>
+                    <td>${fingerprint.category}</td>
+                    <td>${fingerprint.description}</td>
+                    <td>${fingerprint.headers}</td>
+                    <td>${fingerprint.html_patterns}</td>
+                    <td>${fingerprint.script_patterns}</td>
+                </tr>
+            `).join('');
+        }
+        
+        // 更新统计信息
+        function updateStats(fingerprints) {
+            fetch('/api/technologies')
+                .then(response => response.json())
+                .then(technologies => {
+                    const totalTechnologies = Object.keys(technologies.technologies || {}).length;
+                    const mlTechnologies = fingerprints.length;
+                    
+                    const categories = new Set();
+                    for (const techName in technologies.technologies || {}) {
+                        categories.add(technologies.technologies[techName].category);
+                    }
+                    
+                    document.getElementById('total-fingerprints').textContent = totalTechnologies;
+                    document.getElementById('ml-fingerprints').textContent = mlTechnologies;
+                    document.getElementById('total-categories').textContent = categories.size;
+                    document.getElementById('last-update').textContent = new Date().toLocaleString();
+                });
+        }
+        
+        // 页面加载时初始化数据
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFingerprints();
+        });
+    </script>
+</body>
+</html>

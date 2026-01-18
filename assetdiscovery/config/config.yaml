@@ -1,0 +1,35 @@
+# 服务端配置
+server:
+  host: "0.0.0.0"
+  port: 8080
+  workers: 10
+
+# Kafka配置
+kafka:
+  brokers: ["localhost:9092"]
+  task_topic: "assetdiscovery_tasks"
+  result_topic: "assetdiscovery_results"
+  group_id: "assetdiscovery_group"
+
+# 客户端配置
+client:
+  client_id: "client_1"
+  worker_count: 5
+  scan_timeout: 30
+
+# 扫描配置
+scan:
+  port_range: "1-1000"
+  timeout: 5
+  concurrent_scans: 100
+  http_timeout: 10
+
+# 数据库配置
+database:
+  type: "sqlite"
+  path: "./assetdiscovery.db"
+
+# Web配置
+web:
+  template_dir: "./web/templates"
+  static_dir: "./web/static"

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP地理位置查询结果</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .info-note {
+            background-color: #ffffcc;
+            border: 1px solid #ffeb3b;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #666;
+        }
+        table {
+            width: 100%!;(string=2026-01-08 03:18:39)
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .error {
+            color: red;
+        }
+        .success {
+            color: green;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .timestamp {
+            text-align: center;
+            color: #666;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>IP地理位置查询结果</h1>
+        <div class="timestamp">查询时间: %!s(MISSING)</div>
+        <div class="info-note">
+            <strong>注意事项：</strong>
+            <ul>
+                <li>免费IP地理定位API通常不提供街道级别的详细信息</li>
+                <li>只有特定的付费服务才能提供精确的街道地址</li>
+                <li>公共IP地址（如8.8.8.8）通常只能获取到大致的地理位置</li>
+                <li>私有IP地址无法获取地理位置信息</li>
+            </ul>
+        </div>
+        <table>
+            <tr>
+                <th>IP地址</th>
+                <th>城市</th>
+                <th>地区</th>
+                <th>国家</th>
+                <th>街道</th>
+                <th>纬度</th>
+                <th>经度</th>
+                <th>邮编</th>
+                <th>时区</th>
+                <th>状态</th>
+            </tr>
+            <tr>
+                <td>202.108.22.5</td>
+                <td>Jinrongjie</td>
+                <td>Beijing</td>
+                <td>China</td>
+                <td></td>
+                <td>39.923600</td>
+                <td>116.360000</td>
+                <td></td>
+                <td>Asia/Shanghai</td>
+                <td class="success">成功</td>
+            </tr>
+            <tr>
+                <td>8.8.8.8</td>
+                <td>Ashburn</td>
+                <td>Virginia</td>
+                <td>United States</td>
+                <td></td>
+                <td>39.030000</td>
+                <td>-77.500000</td>
+                <td>20149</td>
+                <td>America/New_York</td>
+                <td class="success">成功</td>
+            </tr>
+            <tr>
+                <td>192.168.1.1</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>0.000000</td>
+                <td>0.000000</td>
+                <td></td>
+                <td></td>
+                <td class="success">成功</td>
+            </tr>
+            <tr>
+                <td>1.1.1.1</td>
+                <td>Hong Kong</td>
+                <td>Central and Western District</td>
+                <td>Hong Kong</td>
+                <td></td>
+                <td>22.319300</td>
+                <td>114.169300</td>
+                <td></td>
+                <td>Asia/Hong_Kong</td>
+                <td class="success">成功</td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

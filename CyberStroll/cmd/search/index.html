@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberStroll - 扫描结果查询</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: #e2e8f0;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px 0;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #3b82f6;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            color: #94a3b8;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+        }
+        
+        .search-form {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #cbd5e1;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        #custom_query {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.6);
+            color: #e2e8f0;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        
+        #custom_query:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: rgba(15, 23, 42, 0.8);
+        }
+        
+        .advanced-search {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        .advanced-fields {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .advanced-fields input {
+            padding: 12px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 6px;
+            background: rgba(15, 23, 42, 0.6);
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+        
+        .advanced-fields input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+            background: rgba(15, 23, 42, 0.8);
+        }
+        
+        select {
+            padding: 12px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 6px;
+            background: rgba(15, 23, 42, 0.6);
+            color: #e2e8f0;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            width: 100%;
+            cursor: pointer;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+            background: rgba(15, 23, 42, 0.8);
+        }
+        
+        .search-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        }
+        
+        .search-btn:active {
+            transform: translateY(0);
+        }
+        
+        .result-stats {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 18px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+            font-size: 1rem;
+            font-weight: 500;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            color: #cbd5e1;
+        }
+        
+        .result-stats strong {
+            color: #3b82f6;
+        }
+        
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+        
+        .result-card {
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 28px;
+            border-radius: 12px;
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            position: relative;
+            overflow: hidden;
+            max-width: 100%;
+        }
+        
+        .result-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #6366f1, #8b5cf6);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+        
+        .result-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .result-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 32px rgba(0, 0, 0, 0.35);
+            border-color: rgba(59, 130, 246, 0.35);
+        }
+        
+        .result-card h3 {
+            color: #3b82f6;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            word-break: break-all;
+        }
+        
+        .result-card .detail {
+            margin-bottom: 14px;
+            font-size: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+        }
+        
+        .result-card .detail:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .result-card .label {
+            font-weight: 600;
+            color: #94a3b8;
+            flex: 0 0 120px;
+            font-size: 0.95rem;
+        }
+        
+        .result-card .value {
+            color: #e2e8f0;
+            flex: 1;
+            text-align: right;
+            word-break: break-all;
+            font-size: 1rem;
+            font-weight: 400;
+        }
+        
+        .result-card .status {
+            display: inline-block;
+            padding: 5px 16px;
+            border-radius: 18px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status.open {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        
+        .status.closed {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        
+        .banner {
+            background: rgba(15, 23, 42, 0.9);
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            margin-top: 16px;
+            overflow-x: auto;
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            color: #cbd5e1;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .banner:hover {
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .banner-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        .banner-title {
+            font-weight: 600;
+            color: #94a3b8;
+            margin-bottom: 6px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            color: #94a3b8;
+        }
+        
+        .no-results h3 {
+            color: #cbd5e1;
+            margin-bottom: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+            
+            .search-form {
+                padding: 20px;
+            }
+            
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .advanced-fields {
+                grid-template-columns: 1fr;
+            }
+            
+            .result-card .detail {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .result-card .value {
+                text-align: left;
+                margin-top: 4px;
+            }
+        }
+        
+        /* Loading animation */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #3b82f6;
+        }
+        
+        .loading::after {
+            content: '.';
+            animation: loading 1.5s steps(5, end) infinite;
+        }
+        
+        a {
+            color: #3b82f6;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+            color: #2563eb;
+        }
+        
+        @keyframes loading {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60% { content: '...'; }
+            80%, 100% { content: '.'; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>CyberStroll</h1>
+            <div class="subtitle">网络扫描结果查询平台</div>
+        </header>
+        
+        <form class="search-form" action="/search" method="get">
+            <div class="form-group">
+                <label for="custom_query">自定义搜索</label>
+                <input type="text" id="custom_query" name="custom_query" placeholder="输入搜索条件，如：ip=158.101.131.206 port=443 status=open">
+            </div>
+            
+            <div class="advanced-search">
+                <label>高级搜索</label>
+                <div class="advanced-fields">
+                    <input type="text" id="ip" name="ip" placeholder="IP地址" value="{{.IP}}">
+                    <input type="number" id="port" name="port" placeholder="端口号" min="1" max="65535" value="{{.Port}}">
+                    <input type="text" id="protocol" name="protocol" placeholder="协议（tcp/udp）" value="{{.Protocol}}">
+                    <input type="text" id="service" name="service" placeholder="服务名称" value="{{.Service}}">
+                    <input type="text" id="app" name="app" placeholder="应用名称" value="{{.App}}">
+                    <input type="text" id="banner" name="banner" placeholder="Banner关键字" value="{{.Banner}}">
+                    <input type="text" name="status" placeholder="状态（open/closed）">
+                </div>
+            </div>
+            
+            <button type="submit" class="search-btn">搜索</button>
+        </form>
+
+        <!-- 指纹分析表单 -->
+        <form class="search-form" action="/fingerprint" method="get">
+            <div class="form-group">
+                <label for="fingerprint_query">指纹分析</label>
+                <input type="text" id="fingerprint_query" name="query" placeholder="输入查询条件，如：app=MQTT 或 banner=Apache，留空分析所有banner" value="{{.Query}}">
+            </div>
+            
+            <div class="form-group">
+                <label for="field">要提取的字段</label>
+                <select id="field" name="field" value="{{.Field}}">
+                    <option value="">默认（服务器信息）</option>
+                    <option value="server">Server（所有服务器信息）</option>
+                    <option value="http">HTTP（HTTP相关字段）</option>
+                    <option value="ssh">SSH（SSH版本信息）</option>
+                    <option value="ftp">FTP（FTP服务器信息）</option>
+                    <option value="smtp">SMTP（SMTP服务器信息）</option>
+                    <option value="mqtt">MQTT（MQTT服务器信息）</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="search-btn">分析指纹</button>
+        </form>
+        
+        {{if .IsFingerprint}}
+            {{if .FingerprintResults}}
+                <div class="result-stats">
+                    共分析 <strong>{{len .FingerprintResults}}</strong> 个banner，提取到服务器信息
+                </div>
+                
+                <div class="result-grid">
+                    {{range $addr, $servers := .FingerprintResults}}
+                        <div class="result-card">
+                            <h3>{{$addr}}</h3>
+                            <div class="banner-section">
+                                <div class="banner-title">提取的服务器信息</div>
+                                <div class="banner">
+                                    {{range $servers}}
+                                        {{.}}
+                                        <br>
+                                    {{end}}
+                                </div>
+                            </div>
+                        </div>
+                    {{end}}
+                </div>
+            {{else}}
+                <div class="no-results">
+                    <h3>暂无指纹分析结果</h3>
+                    <p>请输入查询条件，如：app=MQTT 或 banner=Apache，或留空分析所有banner</p>
+                </div>
+            {{end}}
+        {{else if .Results}}
+            <div class="result-stats">
+                共找到 <strong>{{.Results.Hits.Total.Value}}</strong> 个结果
+            </div>
+            
+            <div class="result-grid">
+                {{range .Results.Hits.Hits}}
+                    <div class="result-card">
+                        <h3>{{.Source.IP}}:{{.Source.Port}}</h3>
+                        <div class="detail">
+                            <span class="label">状态:</span> 
+                            <span class="value"><span class="status {{.Source.Status}}">{{.Source.Status}}</span></span>
+                        </div>
+                        <div class="detail">
+                            <span class="label">协议:</span> 
+                            <span class="value">{{.Source.Protocol}}</span>
+                        </div>
+                        <div class="detail">
+                            <span class="label">服务:</span> 
+                            <span class="value">{{if .Source.Service}}{{.Source.Service}}{{else}}未知{{end}}</span>
+                        </div>
+                        <div class="detail">
+                            <span class="label">应用:</span> 
+                            <span class="value">{{if .Source.App}}{{.Source.App}}{{else}}未知{{end}}</span>
+                        </div>
+                        <div class="detail">
+                            <span class="label">扫描时间:</span> 
+                            <span class="value">{{.Source.CreatedAt.Format "2006-01-02 15:04:05"}}</span>
+                        </div>
+                        <div class="detail">
+                            <span class="label">任务ID:</span> 
+                            <span class="value">{{.Source.TaskID}}</span>
+                        </div>
+
+                            <div class="banner-section">
+                                <div class="banner-title">Banner信息</div>
+                                <div class="banner">{{if .Source.Banner}}{{.Source.Banner}}{{else}}无Banner信息{{end}}</div>
+                            </div>
+                    </div>
+                {{end}}
+            </div>
+        {{else}}
+            <div class="no-results">
+                <h3>暂无搜索结果</h3>
+                <p>请输入搜索条件，如：ip=158.101.131.206 或 port=443</p>
+            </div>
+        {{end}}
+    </div>
+</body>
+</html>

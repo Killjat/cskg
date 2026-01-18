@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .title }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 
+                         'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 60px 20px;
+            text-align: center;
+            background: #f8f9ff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: #e8ebff;
+        }
+
+        .upload-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .upload-text {
+            color: #667eea;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            color: #999;
+            font-size: 14px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            display: none;
+            margin-top: 30px;
+            padding: 25px;
+            background: #f8f9ff;
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+        }
+
+        .result.success {
+            border-left-color: #52c41a;
+            background: #f6ffed;
+        }
+
+        .result.error {
+            border-left-color: #ff4d4f;
+            background: #fff2f0;
+        }
+
+        .result-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e8e8e8;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .result-value {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .map-links {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .map-link {
+            display: inline-block;
+            padding: 10px 25px;
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .map-link:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .preview-img {
+            max-width: 100%;
+            max-height: 300px;
+            margin: 20px auto;
+            display: block;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-box {
+            background: #e6f7ff;
+            border: 1px solid #91d5ff;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-title {
+            color: #1890ff;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .info-text {
+            color: #555;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📍 图片GPS地理位置提取系统</h1>
+        <p class="subtitle">上传图片，自动提取拍摄位置的经纬度信息</p>
+
+        <div class="info-box">
+            <div class="info-title">💡 使用说明</div>
+            <div class="info-text">
+                • 支持格式：JPG、JPEG、PNG、TIFF<br>
+                • 文件大小：最大10MB<br>
+                • 仅提取EXIF中的GPS信息，不会上传或保存您的图片<br>
+                • 需要图片在拍摄时开启了GPS定位功能
+            </div>
+        </div>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📸</div>
+            <div class="upload-text">点击或拖拽图片到此处上传</div>
+            <div class="upload-hint">支持 JPG、PNG、TIFF 格式，最大10MB</div>
+        </div>
+
+        <input type="file" id="fileInput" accept="image/jpeg,image/jpg,image/png,image/tiff,image/tif">
+
+        <div style="text-align: center;">
+            <button class="btn" id="uploadBtn" disabled>开始提取位置信息</button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div>正在分析图片...</div>
+        </div>
+
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const loading = document.getElementById('loading');
+        const result = document.getElementById('result');
+        let selectedFile = null;
+
+        // 点击上传区域
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // 文件选择
+        fileInput.addEventListener('change', (e) => {
+            handleFileSelect(e.target.files[0]);
+        });
+
+        // 拖拽上传
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            handleFileSelect(e.dataTransfer.files[0]);
+        });
+
+        // 处理文件选择
+        function handleFileSelect(file) {
+            if (!file) return;
+
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/tiff', 'image/tif'];
+            if (!allowedTypes.includes(file.type)) {
+                alert('不支持的文件格式！请上传 JPG、PNG 或 TIFF 格式的图片。');
+                return;
+            }
+
+            if (file.size > 10 * 1024 * 1024) {
+                alert('文件大小超过10MB限制！');
+                return;
+            }
+
+            selectedFile = file;
+            uploadBtn.disabled = false;
+            uploadArea.innerHTML = `
+                <div class="upload-icon">✅</div>
+                <div class="upload-text">已选择: ${file.name}</div>
+                <div class="upload-hint">点击按钮开始提取，或重新选择图片</div>
+            `;
+        }
+
+        // 上传按钮点击
+        uploadBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            const formData = new FormData();
+            formData.append('image', selectedFile);
+
+            uploadBtn.disabled = true;
+            loading.style.display = 'block';
+            result.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                displayResult(data);
+            } catch (error) {
+                displayResult({
+                    success: false,
+                    message: '网络错误，请稍后重试'
+                });
+            } finally {
+                loading.style.display = 'none';
+                uploadBtn.disabled = false;
+            }
+        });
+
+        // 显示结果
+        function displayResult(data) {
+            result.style.display = 'block';
+            result.className = 'result ' + (data.success ? 'success' : 'error');
+
+            let html = `<div class="result-title">${data.success ? '✅ ' : '❌ '}${data.message}</div>`;
+
+            if (data.success && data.data) {
+                const gps = data.data;
+                html += `
+                    <div class="result-item">
+                        <span class="result-label">纬度 (Latitude):</span>
+                        <span class="result-value">${gps.latitude.toFixed(6)}° ${gps.latitude_ref}</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">经度 (Longitude):</span>
+                        <span class="result-value">${gps.longitude.toFixed(6)}° ${gps.longitude_ref}</span>
+                    </div>
+                `;
+
+                if (gps.altitude > 0) {
+                    html += `
+                        <div class="result-item">
+                            <span class="result-label">海拔 (Altitude):</span>
+                            <span class="result-value">${gps.altitude.toFixed(2)} 米</span>
+                        </div>
+                    `;
+                }
+
+                if (gps.datetime) {
+                    html += `
+                        <div class="result-item">
+                            <span class="result-label">拍摄时间:</span>
+                            <span class="result-value">${gps.datetime}</span>
+                        </div>
+                    `;
+                }
+
+                if (gps.make || gps.model) {
+                    html += `
+                        <div class="result-item">
+                            <span class="result-label">设备信息:</span>
+                            <span class="result-value">${gps.make} ${gps.model}</span>
+                        </div>
+                    `;
+                }
+
+                html += `
+                    <div class="map-links">
+                        <a href="${gps.google_map_url}" target="_blank" class="map-link">🌍 Google地图</a>
+                        <a href="${gps.baidu_map_url}" target="_blank" class="map-link">🗺️ 百度地图</a>
+                    </div>
+                `;
+            } else if (data.data) {
+                // 即使没有GPS信息，也显示其他EXIF信息
+                if (data.data.datetime) {
+                    html += `
+                        <div class="result-item">
+                            <span class="result-label">拍摄时间:</span>
+                            <span class="result-value">${data.data.datetime}</span>
+                        </div>
+                    `;
+                }
+                if (data.data.make || data.data.model) {
+                    html += `
+                        <div class="result-item">
+                            <span class="result-label">设备信息:</span>
+                            <span class="result-value">${data.data.make} ${data.data.model}</span>
+                        </div>
+                    `;
+                }
+            }
+
+            result.innerHTML = html;
+            result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    </script>
+</body>
+</html>

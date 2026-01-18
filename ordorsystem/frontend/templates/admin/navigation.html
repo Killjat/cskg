@@ -1,0 +1,55 @@
+<!-- Admin Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="{{ url_for('admin.dashboard') }}">
+            <i class="fa fa-dashboard" aria-hidden="true"></i> 网吧点餐系统 - 管理后台
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint.startswith('admin.dashboard') %}active{% endif %}" href="{{ url_for('admin.dashboard') }}">仪表盘</a>
+                </li>
+                
+                <!-- Products Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {% if request.endpoint.startswith('admin.product') or request.endpoint.startswith('admin.category') %}active{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        商品管理
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{{ url_for('admin.categories') }}">商品分类</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('admin.products') }}">商品列表</a></li>
+                    </ul>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint.startswith('admin.order') %}active{% endif %}" href="{{ url_for('admin.orders') }}">订单管理</a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint.startswith('admin.user') %}active{% endif %}" href="{{ url_for('admin.users') }}">用户管理</a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link {% if request.endpoint.startswith('admin.setting') %}active{% endif %}" href="{{ url_for('admin.settings') }}">系统设置</a>
+                </li>
+            </ul>
+            
+            <!-- User Menu -->
+            <ul class="navbar-nav">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fa fa-user-circle" aria-hidden="true"></i> {{ current_user.nickname or current_user.username }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="{{ url_for('admin.admin_profile') }}">个人资料</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">退出登录</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>

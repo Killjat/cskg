@@ -1,0 +1,58 @@
+{
+  "self_evolving_wappalyzer": {
+    "rules_file": "technologies.json",
+    "timeout": 10,
+    "scan_headers": true,
+    "scan_html": true,
+    "scan_scripts": true,
+    "evolution_enabled": true,
+    "confidence_threshold": 0.7,
+    "log_evolution": true,
+    "max_evolution_events": 100
+  },
+  "scan_targets": {
+    "enabled": true,
+    "sources": {
+      "file": {
+        "enabled": true,
+        "file_path": "education_sites.json",
+        "limit": 1000
+      },
+      "crawler": {
+        "enabled": true,
+        "start_urls": ["https://www.edu.gov.cn"],
+        "max_depth": 2,
+        "max_urls": 500,
+        "allowed_domains": [],
+        "disallowed_domains": [],
+        "allowed_paths": ["/education", "/university", "/college"],
+        "disallowed_paths": ["/login", "/admin"],
+        "user_agent": "Mozilla/5.0 (compatible; SelfEvolvingWappalyzer/1.0; +https://github.com/example/self-evolving-wappalyzer)"
+      },
+      "alexa": {
+        "enabled": false,
+        "limit": 100
+      },
+      "tranco": {
+        "enabled": false,
+        "limit": 100
+      }
+    },
+    "filters": {
+      "tld": ["edu", "ac", "edu.cn", "ac.uk"],
+      "min_estimated_visits": 0,
+      "tech_category": [],
+      "industry": ["education"],
+      "country": []
+    },
+    "crawl_strategy": {
+      "enabled": true,
+      "max_concurrent": 10,
+      "retry_count": 3,
+      "delay_between_requests": 1,
+      "respect_robots_txt": true,
+      "follow_redirects": true,
+      "timeout": 15
+    }
+  }
+}

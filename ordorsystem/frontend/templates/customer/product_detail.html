@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} - 网吧点餐系统{% endblock %}
+
+{% block navigation %}
+    {% include 'customer/navigation.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('customer.home') }}">首页</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('customer.category_products', category_id=product.category_id) }}">{{ product.category.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+        </ol>
+    </nav>
+    
+    <!-- Product Detail -->
+    <div class="row">
+        <!-- Product Image -->
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="fa fa-shopping-bag" style="font-size: 10rem; color: #6c757d;"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Product Information -->
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h1 class="card-title">{{ product.name }}</h1>
+                    <h3 class="text-primary mt-3">¥{{ product.price }}</h3>
+                    
+                    <div class="mt-4">
+                        <p class="card-text">{{ product.description }}</p>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fa fa-check-circle text-success me-2"></i>
+                                    <span>库存: {{ product.stock }} 件</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fa fa-check-circle text-success me-2"></i>
+                                    <span>分类: {{ product.category.name }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Add to Cart Form -->
+                    <form method="POST" action="{{ url_for('customer.add_to_cart', product_id=product.id) }}" class="mt-5">
+                        <div class="row">
+                            <div class="col-4">
+                                <div class="input-group">
+                                    <input type="number" class="form-control" name="quantity" value="1" min="1" max="{{ product.stock }}">
+                                </div>
+                            </div>
+                            <div class="col-8">
+                                <button type="submit" class="btn btn-primary btn-lg w-100">
+                                    <i class="fa fa-shopping-cart me-2"></i> 添加到购物车
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Related Products -->
+    {% if related_products %}
+        <div class="row mt-5">
+            <div class="col">
+                <h2 class="text-center mb-4">相关商品</h2>
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+                    {% for related_product in related_products %}
+                        <div class="col">
+                            <a href="{{ url_for('customer.product_detail', product_id=related_product.id) }}" class="text-decoration-none">
+                                <div class="card h-100 shadow-sm">
+                                    <div class="card-img-top bg-light text-center py-3">
+                                        <i class="fa fa-shopping-bag" style="font-size: 3rem; color: #6c757d;"></i>
+                                    </div>
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ related_product.name }}</h5>
+                                        <p class="card-text text-primary">¥{{ related_product.price }}</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

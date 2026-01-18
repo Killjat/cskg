@@ -1,0 +1,36 @@
+server:
+  port: 8081
+  host: 0.0.0.0
+  read_timeout: 30
+  write_timeout: 30
+collector:
+  login_interval: 5
+  process_interval: 2
+  command_interval: 2
+  file_watch_paths:
+  - /var/log
+  - /etc
+  recursive_watch: false
+storage:
+  type: sqlite
+  file_path: ./server_monitor.db
+  host: localhost
+  port: 3306
+  username: root
+  password: ""
+  database: server_monitor
+alert:
+  enabled: false
+  levels:
+  - warning
+  - error
+  - critical
+  notification:
+  - email
+  smtp:
+    host: localhost
+    port: 25
+    username: ""
+    password: ""
+    from: ""
+    to: ""
