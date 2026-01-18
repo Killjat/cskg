@@ -399,6 +399,272 @@ func (pl *ProbeLoader) LoadBuiltinProbes() map[string]*Probe {
 			Timeout:     5,
 			Rarity:      5,
 		},
+		
+		// 数据库协议探测
+		// SQL Server探测
+		{
+			Name:        "SQLServerLogin",
+			Type:        ProbeTypeTCP,
+			Payload:     generateSQLServerLoginPacket(),
+			PayloadHex:  hex.EncodeToString(generateSQLServerLoginPacket()),
+			Ports:       []int{1433, 1434},
+			Protocol:    "sqlserver",
+			Description: "Microsoft SQL Server login probe",
+			Timeout:     10,
+			Rarity:      4,
+		},
+		
+		// Oracle探测
+		{
+			Name:        "OracleConnect",
+			Type:        ProbeTypeTCP,
+			Payload:     generateOracleConnectPacket(),
+			PayloadHex:  hex.EncodeToString(generateOracleConnectPacket()),
+			Ports:       []int{1521, 1522},
+			Protocol:    "oracle",
+			Description: "Oracle Database TNS connect",
+			Timeout:     10,
+			Rarity:      4,
+		},
+		
+		// MongoDB探测
+		{
+			Name:        "MongoDBHandshake",
+			Type:        ProbeTypeTCP,
+			Payload:     generateMongoDBHandshakePacket(),
+			PayloadHex:  hex.EncodeToString(generateMongoDBHandshakePacket()),
+			Ports:       []int{27017, 27018, 27019},
+			Protocol:    "mongodb",
+			Description: "MongoDB wire protocol handshake",
+			Timeout:     10,
+			Rarity:      4,
+		},
+		
+		// Elasticsearch探测
+		{
+			Name:        "ElasticsearchInfo",
+			Type:        ProbeTypeTCP,
+			Payload:     []byte("GET / HTTP/1.1\r\nHost: localhost\r\nUser-Agent: NetworkProbe/1.0\r\n\r\n"),
+			PayloadHex:  "474554202f20485454502f312e310d0a486f73743a206c6f63616c686f73740d0a557365722d4167656e743a204e6574776f726b50726f62652f312e300d0a0d0a",
+			Ports:       []int{9200, 9300},
+			Protocol:    "elasticsearch",
+			Description: "Elasticsearch cluster info",
+			Timeout:     10,
+			Rarity:      4,
+		},
+		
+		// InfluxDB探测
+		{
+			Name:        "InfluxDBPing",
+			Type:        ProbeTypeTCP,
+			Payload:     []byte("GET /ping HTTP/1.1\r\nHost: localhost\r\nUser-Agent: NetworkProbe/1.0\r\n\r\n"),
+			PayloadHex:  "474554202f70696e6720485454502f312e310d0a486f73743a206c6f63616c686f73740d0a557365722d4167656e743a204e6574776f726b50726f62652f312e300d0a0d0a",
+			Ports:       []int{8086, 8088},
+			Protocol:    "influxdb",
+			Description: "InfluxDB ping endpoint",
+			Timeout:     10,
+			Rarity:      5,
+		},
+		
+		// Cassandra探测
+		{
+			Name:        "CassandraOptions",
+			Type:        ProbeTypeTCP,
+			Payload:     generateCassandraOptionsPacket(),
+			PayloadHex:  hex.EncodeToString(generateCassandraOptionsPacket()),
+			Ports:       []int{9042, 9160},
+			Protocol:    "cassandra",
+			Description: "Cassandra CQL options request",
+			Timeout:     10,
+			Rarity:      5,
+		},
+		
+		// Neo4j探测
+		{
+			Name:        "Neo4jBolt",
+			Type:        ProbeTypeTCP,
+			Payload:     generateNeo4jBoltHandshake(),
+			PayloadHex:  hex.EncodeToString(generateNeo4jBoltHandshake()),
+			Ports:       []int{7687, 7474},
+			Protocol:    "neo4j",
+			Description: "Neo4j Bolt protocol handshake",
+			Timeout:     10,
+			Rarity:      5,
+		},
+		
+		// IoT协议探测
+		// CoAP探测
+		{
+			Name:        "CoAPPing",
+			Type:        ProbeTypeUDP,
+			Payload:     generateCoAPPingPacket(),
+			PayloadHex:  hex.EncodeToString(generateCoAPPingPacket()),
+			Ports:       []int{5683, 5684},
+			Protocol:    "coap",
+			Description: "CoAP ping request",
+			Timeout:     5,
+			Rarity:      4,
+		},
+		
+		// LoRaWAN探测
+		{
+			Name:        "LoRaWANGateway",
+			Type:        ProbeTypeUDP,
+			Payload:     generateLoRaWANPacket(),
+			PayloadHex:  hex.EncodeToString(generateLoRaWANPacket()),
+			Ports:       []int{1700},
+			Protocol:    "lorawan",
+			Description: "LoRaWAN gateway protocol",
+			Timeout:     5,
+			Rarity:      6,
+		},
+		
+		// AMQP探测
+		{
+			Name:        "AMQPProtocolHeader",
+			Type:        ProbeTypeTCP,
+			Payload:     []byte("AMQP\x00\x00\x09\x01"),
+			PayloadHex:  "414d515000000901",
+			Ports:       []int{5672, 5671},
+			Protocol:    "amqp",
+			Description: "AMQP protocol header",
+			Timeout:     10,
+			Rarity:      5,
+		},
+		
+		// 企业基础设施协议
+		// LDAP探测
+		{
+			Name:        "LDAPBind",
+			Type:        ProbeTypeTCP,
+			Payload:     generateLDAPBindPacket(),
+			PayloadHex:  hex.EncodeToString(generateLDAPBindPacket()),
+			Ports:       []int{389, 636},
+			Protocol:    "ldap",
+			Description: "LDAP bind request",
+			Timeout:     10,
+			Rarity:      4,
+		},
+		
+		// Kerberos探测
+		{
+			Name:        "KerberosASReq",
+			Type:        ProbeTypeUDP,
+			Payload:     generateKerberosASReqPacket(),
+			PayloadHex:  hex.EncodeToString(generateKerberosASReqPacket()),
+			Ports:       []int{88, 464},
+			Protocol:    "kerberos",
+			Description: "Kerberos AS-REQ",
+			Timeout:     5,
+			Rarity:      5,
+		},
+		
+		// RADIUS探测
+		{
+			Name:        "RADIUSAccessRequest",
+			Type:        ProbeTypeUDP,
+			Payload:     generateRADIUSAccessRequestPacket(),
+			PayloadHex:  hex.EncodeToString(generateRADIUSAccessRequestPacket()),
+			Ports:       []int{1812, 1813},
+			Protocol:    "radius",
+			Description: "RADIUS Access-Request",
+			Timeout:     5,
+			Rarity:      5,
+		},
+		
+		// NTP探测
+		{
+			Name:        "NTPRequest",
+			Type:        ProbeTypeUDP,
+			Payload:     generateNTPRequestPacket(),
+			PayloadHex:  hex.EncodeToString(generateNTPRequestPacket()),
+			Ports:       []int{123},
+			Protocol:    "ntp",
+			Description: "NTP time request",
+			Timeout:     5,
+			Rarity:      3,
+		},
+		
+		// Syslog探测
+		{
+			Name:        "SyslogMessage",
+			Type:        ProbeTypeUDP,
+			Payload:     []byte("<34>1 2024-01-01T00:00:00Z localhost NetworkProbe - - - Test message"),
+			PayloadHex:  "3c33343e3120323032342d30312d30315430303a30303a30305a206c6f63616c686f7374204e6574776f726b50726f6265202d202d202d2054657374206d657373616765",
+			Ports:       []int{514, 6514},
+			Protocol:    "syslog",
+			Description: "Syslog test message",
+			Timeout:     5,
+			Rarity:      4,
+		},
+		
+		// 安全协议
+		// OpenVPN探测
+		{
+			Name:        "OpenVPNHandshake",
+			Type:        ProbeTypeUDP,
+			Payload:     generateOpenVPNHandshakePacket(),
+			PayloadHex:  hex.EncodeToString(generateOpenVPNHandshakePacket()),
+			Ports:       []int{1194},
+			Protocol:    "openvpn",
+			Description: "OpenVPN handshake",
+			Timeout:     5,
+			Rarity:      5,
+		},
+		
+		// WireGuard探测
+		{
+			Name:        "WireGuardHandshake",
+			Type:        ProbeTypeUDP,
+			Payload:     generateWireGuardHandshakePacket(),
+			PayloadHex:  hex.EncodeToString(generateWireGuardHandshakePacket()),
+			Ports:       []int{51820},
+			Protocol:    "wireguard",
+			Description: "WireGuard handshake initiation",
+			Timeout:     5,
+			Rarity:      6,
+		},
+		
+		// 电信协议
+		// SIP探测
+		{
+			Name:        "SIPOptions",
+			Type:        ProbeTypeTCP,
+			Payload:     []byte("OPTIONS sip:user@localhost SIP/2.0\r\nVia: SIP/2.0/TCP localhost:5060;branch=z9hG4bK123456\r\nFrom: <sip:probe@localhost>;tag=123456\r\nTo: <sip:user@localhost>\r\nCall-ID: 123456@localhost\r\nCSeq: 1 OPTIONS\r\nContent-Length: 0\r\n\r\n"),
+			PayloadHex:  "4f5054494f4e532073697a3a75736572406c6f63616c686f73742053495a2f322e300d0a5669613a2053495a2f322e302f544350206c6f63616c686f73743a353036303b6272616e63683d7a39684734624b3132333435360d0a46726f6d3a203c7369703a70726f6265406c6f63616c686f73743e3b7461673d3132333435360d0a546f3a203c7369703a75736572406c6f63616c686f73743e0d0a43616c6c2d49443a203132333435364c6f63616c686f73740d0a435365713a2031204f5054494f4e530d0a436f6e74656e742d4c656e6774683a20300d0a0d0a",
+			Ports:       []int{5060, 5061},
+			Protocol:    "sip",
+			Description: "SIP OPTIONS request",
+			Timeout:     10,
+			Rarity:      4,
+		},
+		
+		// 云服务协议
+		// Docker API探测
+		{
+			Name:        "DockerVersion",
+			Type:        ProbeTypeTCP,
+			Payload:     []byte("GET /version HTTP/1.1\r\nHost: localhost\r\nUser-Agent: NetworkProbe/1.0\r\n\r\n"),
+			PayloadHex:  "474554202f76657273696f6e20485454502f312e310d0a486f73743a206c6f63616c686f73740d0a557365722d4167656e743a204e6574776f726b50726f62652f312e300d0a0d0a",
+			Ports:       []int{2375, 2376},
+			Protocol:    "docker",
+			Description: "Docker API version check",
+			Timeout:     10,
+			Rarity:      5,
+		},
+		
+		// Kubernetes API探测
+		{
+			Name:        "KubernetesAPI",
+			Type:        ProbeTypeTCP,
+			Payload:     []byte("GET /api/v1 HTTP/1.1\r\nHost: localhost\r\nUser-Agent: NetworkProbe/1.0\r\n\r\n"),
+			PayloadHex:  "474554202f6170692f763120485454502f312e310d0a486f73743a206c6f63616c686f73740d0a557365722d4167656e743a204e6574776f726b50726f62652f312e300d0a0d0a",
+			Ports:       []int{6443, 8080},
+			Protocol:    "kubernetes",
+			Description: "Kubernetes API server",
+			Timeout:     10,
+			Rarity:      5,
+		},
 	}
 	
 	// 转换为map
@@ -926,6 +1192,325 @@ func generateS7SetupPacket() []byte {
 		0xC1, 0x02, 0x01, 0x00, // Parameter: TPDU Size (256 bytes)
 		0xC2, 0x02, 0x01, 0x02, // Parameter: Source TSAP
 		0xC0, 0x01, 0x0A,       // Parameter: Destination TSAP
+	}
+	
+	return packet
+}
+// generateSQLServerLoginPacket 生成SQL Server登录包
+func generateSQLServerLoginPacket() []byte {
+	// SQL Server TDS (Tabular Data Stream) Login7 packet
+	// 这是一个简化的Login7包，用于触发服务器响应
+	packet := []byte{
+		// TDS Header
+		0x10,       // Type: Login7
+		0x01,       // Status: EOM (End of Message)
+		0x00, 0x34, // Length: 52 bytes
+		0x00, 0x00, // SPID: 0
+		0x00,       // PacketID: 0
+		0x00,       // Window: 0
+		
+		// Login7 Data
+		0x00, 0x00, 0x00, 0x00, // Length: will be calculated
+		0x71, 0x00, 0x00, 0x00, // TDS Version: 7.1
+		0x00, 0x10, 0x00, 0x00, // Packet Size: 4096
+		0x00, 0x00, 0x00, 0x00, // Client Program Version
+		0x00, 0x00, 0x00, 0x00, // Client PID
+		0x00, 0x00, 0x00, 0x00, // Connection ID
+		0x00,                   // Option Flags 1
+		0x00,                   // Option Flags 2
+		0x00,                   // Type Flags
+		0x00,                   // Option Flags 3
+		0x00, 0x00, 0x00, 0x00, // Client Time Zone
+		0x00, 0x00, 0x00, 0x00, // Client LCID
+		
+		// Offsets and lengths for variable data (simplified)
+		0x5e, 0x00, // Hostname offset
+		0x00, 0x00, // Hostname length
+		0x5e, 0x00, // Username offset  
+		0x00, 0x00, // Username length
+		0x5e, 0x00, // Password offset
+		0x00, 0x00, // Password length
+		0x5e, 0x00, // App name offset
+		0x00, 0x00, // App name length
+		0x5e, 0x00, // Server name offset
+		0x00, 0x00, // Server name length
+		0x5e, 0x00, // Library name offset
+		0x00, 0x00, // Library name length
+		0x5e, 0x00, // Language offset
+		0x00, 0x00, // Language length
+		0x5e, 0x00, // Database offset
+		0x00, 0x00, // Database length
+	}
+	
+	return packet
+}
+
+// generateOracleConnectPacket 生成Oracle TNS连接包
+func generateOracleConnectPacket() []byte {
+	// Oracle TNS (Transparent Network Substrate) Connect packet
+	connectData := "(CONNECT_DATA=(SERVICE_NAME=XE))"
+	
+	packet := []byte{
+		// TNS Header
+		0x00, 0x3A, // Packet Length (58 bytes)
+		0x00, 0x00, // Packet Checksum
+		0x01,       // Packet Type: Connect
+		0x00,       // Reserved
+		0x00, 0x00, // Header Checksum
+		
+		// Connect Data
+		0x01, 0x36, // Version: 310
+		0x01, 0x2C, // Version (compatible)
+		0x00, 0x00, // Service Options
+		0x08, 0x00, // Session Data Unit Size
+		0x7F, 0xFF, // Maximum Transmission Unit
+		0x7F, 0x08, // NT Protocol Characteristics
+		0x00, 0x00, // Line Turnaround Value
+		0x00, 0x01, // Value of 1 in Hardware
+		0x00, 0x1D, // Length of Connect Data
+	}
+	
+	// Add connect data
+	packet = append(packet, []byte(connectData)...)
+	
+	// Update packet length
+	totalLen := len(packet)
+	packet[0] = byte(totalLen >> 8)
+	packet[1] = byte(totalLen)
+	
+	return packet
+}
+
+// generateMongoDBHandshakePacket 生成MongoDB握手包
+func generateMongoDBHandshakePacket() []byte {
+	// MongoDB Wire Protocol OP_QUERY for isMaster command
+	// This is used for handshake and server discovery
+	
+	// Message Header
+	messageLength := int32(60) // Will be updated
+	requestID := int32(1)
+	responseTo := int32(0)
+	opCode := int32(2004) // OP_QUERY
+	
+	// Query message
+	flags := int32(0)
+	fullCollectionName := "admin.$cmd\x00"
+	numberToSkip := int32(0)
+	numberToReturn := int32(1)
+	
+	// isMaster command document (BSON)
+	query := []byte{
+		0x17, 0x00, 0x00, 0x00, // Document length: 23 bytes
+		0x10,                   // Type: int32
+		'i', 's', 'M', 'a', 's', 't', 'e', 'r', 0x00, // Field name: "isMaster"
+		0x01, 0x00, 0x00, 0x00, // Value: 1
+		0x00, // End of document
+	}
+	
+	// Build packet
+	packet := make([]byte, 0, 100)
+	
+	// Add message header (16 bytes)
+	packet = append(packet, byte(messageLength), byte(messageLength>>8), byte(messageLength>>16), byte(messageLength>>24))
+	packet = append(packet, byte(requestID), byte(requestID>>8), byte(requestID>>16), byte(requestID>>24))
+	packet = append(packet, byte(responseTo), byte(responseTo>>8), byte(responseTo>>16), byte(responseTo>>24))
+	packet = append(packet, byte(opCode), byte(opCode>>8), byte(opCode>>16), byte(opCode>>24))
+	
+	// Add query message
+	packet = append(packet, byte(flags), byte(flags>>8), byte(flags>>16), byte(flags>>24))
+	packet = append(packet, []byte(fullCollectionName)...)
+	packet = append(packet, byte(numberToSkip), byte(numberToSkip>>8), byte(numberToSkip>>16), byte(numberToSkip>>24))
+	packet = append(packet, byte(numberToReturn), byte(numberToReturn>>8), byte(numberToReturn>>16), byte(numberToReturn>>24))
+	packet = append(packet, query...)
+	
+	// Update message length
+	actualLength := int32(len(packet))
+	packet[0] = byte(actualLength)
+	packet[1] = byte(actualLength >> 8)
+	packet[2] = byte(actualLength >> 16)
+	packet[3] = byte(actualLength >> 24)
+	
+	return packet
+}
+
+// generateCassandraOptionsPacket 生成Cassandra OPTIONS包
+func generateCassandraOptionsPacket() []byte {
+	// Cassandra Native Protocol v4 OPTIONS request
+	packet := []byte{
+		0x04,       // Version: 4
+		0x00,       // Flags: 0
+		0x00, 0x01, // Stream ID: 1
+		0x05,       // Opcode: OPTIONS
+		0x00, 0x00, 0x00, 0x00, // Length: 0 (no body)
+	}
+	
+	return packet
+}
+
+// generateNeo4jBoltHandshake 生成Neo4j Bolt握手包
+func generateNeo4jBoltHandshake() []byte {
+	// Neo4j Bolt Protocol handshake
+	// Magic preamble + supported versions
+	packet := []byte{
+		// Magic preamble
+		0x60, 0x60, 0xB0, 0x17,
+		
+		// Supported protocol versions (4 versions, 4 bytes each)
+		0x00, 0x00, 0x04, 0x04, // Version 4.4
+		0x00, 0x00, 0x04, 0x03, // Version 4.3
+		0x00, 0x00, 0x04, 0x02, // Version 4.2
+		0x00, 0x00, 0x04, 0x01, // Version 4.1
+	}
+	
+	return packet
+}
+
+// generateCoAPPingPacket 生成CoAP ping包
+func generateCoAPPingPacket() []byte {
+	// CoAP (Constrained Application Protocol) ping message
+	// This is a CON (Confirmable) Empty message
+	packet := []byte{
+		0x40,       // Version: 1, Type: CON (0), Token Length: 0
+		0x00,       // Code: 0.00 (Empty)
+		0x00, 0x01, // Message ID: 1
+		// No token, no options, no payload
+	}
+	
+	return packet
+}
+
+// generateLoRaWANPacket 生成LoRaWAN网关包
+func generateLoRaWANPacket() []byte {
+	// LoRaWAN Semtech UDP Protocol
+	// PULL_DATA packet for gateway communication
+	packet := []byte{
+		0x02,       // Protocol Version: 2
+		0x00, 0x01, // Random Token
+		0x02,       // PULL_DATA identifier
+		// Gateway EUI (8 bytes) - using example EUI
+		0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
+	}
+	
+	return packet
+}
+
+// generateLDAPBindPacket 生成LDAP绑定包
+func generateLDAPBindPacket() []byte {
+	// LDAP Bind Request (Simple Authentication)
+	// ASN.1 BER encoded
+	packet := []byte{
+		0x30, 0x0c, // SEQUENCE, length 12
+		0x02, 0x01, 0x01, // messageID: 1
+		0x60, 0x07, // bindRequest SEQUENCE, length 7
+		0x02, 0x01, 0x03, // version: 3
+		0x04, 0x00, // name: empty (anonymous)
+		0x80, 0x00, // simple authentication, empty password
+	}
+	
+	return packet
+}
+
+// generateKerberosASReqPacket 生成Kerberos AS-REQ包
+func generateKerberosASReqPacket() []byte {
+	// Simplified Kerberos AS-REQ (Authentication Server Request)
+	// This is a minimal packet to trigger a response
+	packet := []byte{
+		0x6a, 0x81, 0x80, // APPLICATION 10, length 128 (AS-REQ)
+		0x30, 0x7d,       // SEQUENCE, length 125
+		0xa1, 0x03,       // [1] pvno
+		0x02, 0x01, 0x05, // INTEGER 5 (Kerberos v5)
+		0xa2, 0x03,       // [2] msg-type  
+		0x02, 0x01, 0x0a, // INTEGER 10 (AS-REQ)
+		0xa4, 0x11,       // [4] req-body
+		0x30, 0x0f,       // SEQUENCE
+		0xa0, 0x07,       // [0] kdc-options
+		0x03, 0x05, 0x00, 0x40, 0x00, 0x00, 0x10, // BIT STRING
+		0xa2, 0x04,       // [2] cname
+		0x30, 0x02,       // SEQUENCE  
+		0x04, 0x00,       // OCTET STRING (empty principal)
+	}
+	
+	return packet
+}
+
+// generateRADIUSAccessRequestPacket 生成RADIUS Access-Request包
+func generateRADIUSAccessRequestPacket() []byte {
+	// RADIUS Access-Request packet
+	packet := []byte{
+		0x01,       // Code: Access-Request
+		0x01,       // Identifier: 1
+		0x00, 0x14, // Length: 20 bytes (header only)
+		// Request Authenticator (16 bytes of zeros for simplicity)
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	}
+	
+	return packet
+}
+
+// generateNTPRequestPacket 生成NTP请求包
+func generateNTPRequestPacket() []byte {
+	// NTP (Network Time Protocol) request packet
+	packet := []byte{
+		0x1b,       // LI: 0, VN: 3, Mode: 3 (client)
+		0x00,       // Stratum: 0
+		0x00,       // Poll: 0
+		0x00,       // Precision: 0
+		0x00, 0x00, 0x00, 0x00, // Root Delay
+		0x00, 0x00, 0x00, 0x00, // Root Dispersion
+		0x00, 0x00, 0x00, 0x00, // Reference ID
+		// Reference Timestamp (8 bytes)
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		// Origin Timestamp (8 bytes)
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		// Receive Timestamp (8 bytes)
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		// Transmit Timestamp (8 bytes) - current time would go here
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	}
+	
+	return packet
+}
+
+// generateOpenVPNHandshakePacket 生成OpenVPN握手包
+func generateOpenVPNHandshakePacket() []byte {
+	// OpenVPN UDP handshake initiation
+	// P_CONTROL_HARD_RESET_CLIENT_V2
+	packet := []byte{
+		0x38,       // Opcode: P_CONTROL_HARD_RESET_CLIENT_V2, Key ID: 0
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, // Session ID (8 bytes)
+		0x00, 0x00, 0x00, 0x00, // Packet ID (4 bytes)
+		// No additional data for initial handshake
+	}
+	
+	return packet
+}
+
+// generateWireGuardHandshakePacket 生成WireGuard握手包
+func generateWireGuardHandshakePacket() []byte {
+	// WireGuard Handshake Initiation message
+	packet := []byte{
+		0x01, 0x00, 0x00, 0x00, // Message Type: Handshake Initiation (1)
+		0x00, 0x00, 0x00, 0x00, // Reserved (4 bytes)
+		// Sender Index (4 bytes) - random
+		0x12, 0x34, 0x56, 0x78,
+		// Unencrypted Ephemeral (32 bytes) - would be actual curve25519 public key
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		// Encrypted Static (48 bytes) - would be encrypted static public key + auth tag
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		// Encrypted Timestamp (28 bytes) - would be encrypted timestamp + auth tag
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00,
 	}
 	
 	return packet

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/hex"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -2352,4 +2353,1832 @@ func (p *S7Parser) GetConfidence(data []byte) int {
 		return 80
 	}
 	return 0
+}
+// SQLServerParser SQL Server协议解析器
+type SQLServerParser struct{}
+
+func (p *SQLServerParser) Parse(data []byte) (*ParsedInfo, error) {
+	info := &ParsedInfo{
+		Protocol:   "sqlserver",
+		Service:    "sqlserver",
+		Product:    "Microsoft SQL Server",
+		Fields:     make(map[string]string),
+		Confidence: 80,
+	}
+	
+	if len(data) < 8 {
+		return info, nil
+	}
+	
+	// TDS (Tabular Data Stream) 响应解析
+	tdsType := data[0]
+	status := data[1]
+	length := uint16(data[2])<<8 | uint16(data[3])
+	
+	info.Fields["tds_type"] = fmt.Sprintf("0x%02x", tdsType)
+	info.Fields["status"] = fmt.Sprintf("0x%02x", status)
+	info.Fields["packet_length"] = fmt.Sprintf("%d", length)
+	
+	// 解析TDS类型
+	switch tdsType {
+	case 0x04:
+		info.Fields["tds_type_name"] = "Response"
+		info.Confidence = 95
+	case 0x0E:
+		info.Fields["tds_type_name"] = "Login Response"
+		info.Confidence = 98
+	case 0x11:
+		info.Fields["tds_type_name"] = "SQL Batch Response"
+		info.Confidence = 90
+	default:
+		info.Fields["tds_type_name"] = "Unknown"
+	}
+	
+	// 如果是登录响应，尝试解析更多信息
+	if tdsType == 0x0E && len(data) > 8 {
+		p.parseLoginResponse(data[8:], info)
+	}
+	
+	return info, nil
+}
+
+// parseLoginResponse 解析SQL Server登录响应
+func (p *SQLServerParser) parseLoginResponse(data []byte, info *ParsedInfo) {
+	if len(data) < 1 {
+		return
+	}
+	
+	// Token类型
+	token := data[0]
+	info.Fields["token_type"] = fmt.Sprintf("0x%02x", token)
+	
+	switch token {
+	case 0xAD:
+		info.Fields["token_name"] = "LOGINACK"
+		if len(data) > 5 {
+			// 解析版本信息
+			version := uint32(data[5])<<24 | uint32(data[4])<<16 | uint32(data[3])<<8 | uint32(data[2])
+			info.Fields["server_version"] = fmt.Sprintf("0x%08x", version)
+			
+			// 解析版本号
+			major := (version >> 24) & 0xFF
+			minor := (version >> 16) & 0xFF
+			build := version & 0xFFFF
+			info.Version = fmt.Sprintf("%d.%d.%d", major, minor, build)
+		}
+		info.ExtraInfo = "Login Successful"
+		info.Confidence = 98
+	case 0xAA:
+		info.Fields["token_name"] = "ERROR"
+		info.ExtraInfo = "Login Error"
+	case 0xAB:
+		info.Fields["token_name"] = "INFO"
+		info.ExtraInfo = "Login Info"
+	}
+}
+
+func (p *SQLServerParser) GetProtocol() string { return "sqlserver" }
+func (p *SQLServerParser) GetConfidence(data []byte) int {
+	if len(data) >= 8 {
+		tdsType := data[0]
+		// 检查TDS类型是否有效
+		if tdsType == 0x04 || tdsType == 0x0E || tdsType == 0x11 {
+			return 90
+		}
+	}
+	return 0
+}
+
+// OracleParser Oracle数据库协议解析器
+type OracleParser struct{}
+
+func (p *OracleParser) Parse(data []byte) (*ParsedInfo, error) {
+	info := &ParsedInfo{
+		Protocol:   "oracle",
+		Service:    "oracle",
+		Product:    "Oracle Database",
+		Fields:     make(map[string]string),
+		Confidence: 80,
+	}
+	
+	if len(data) < 8 {
+		return info, nil
+	}
+	
+	// TNS (Transparent Network Substrate) 响应解析
+	packetLength := uint16(data[0])<<8 | uint16(data[1])
+	packetChecksum := uint16(data[2])<<8 | uint16(data[3])
+	packetType := data[4]
+	
+	info.Fields["packet_length"] = fmt.Sprintf("%d", packetLength)
+	info.Fields["packet_checksum"] = fmt.Sprintf("0x%04x", packetChecksum)
+	info.Fields["packet_type"] = fmt.Sprintf("%d", packetType)
+	
+	// 解析包类型
+	switch packetType {
+	case 0x02:
+		info.Fields["packet_type_name"] = "Accept"
+		info.Confidence = 95
+		p.parseAcceptPacket(data[8:], info)
+	case 0x04:
+		info.Fields["packet_type_name"] = "Refuse"
+		info.ExtraInfo = "Connection Refused"
+		info.Confidence = 95
+	case 0x05:
+		info.Fields["packet_type_name"] = "Redirect"
+		info.ExtraInfo = "Connection Redirect"
+	case 0x09:
+		info.Fields["packet_type_name"] = "Resend"
+	default:
+		info.Fields["packet_type_name"] = "Unknown"
+	}
+	
+	return info, nil
+}
+
+// parseAcceptPacket 解析Oracle Accept包
+func (p *OracleParser) parseAcceptPacket(data []byte, info *ParsedInfo) {
+	if len(data) < 8 {
+		return
+	}
+	
+	// 解析版本信息
+	version := uint16(data[0])<<8 | uint16(data[1])
+	info.Fields["tns_version"] = fmt.Sprintf("%d", version)
+	
+	// 解析服务选项
+	serviceOptions := uint16(data[2])<<8 | uint16(data[3])
+	info.Fields["service_options"] = fmt.Sprintf("0x%04x", serviceOptions)
+	
+	// 解析SDU大小
+	sduSize := uint16(data[4])<<8 | uint16(data[5])
+	info.Fields["sdu_size"] = fmt.Sprintf("%d", sduSize)
+	
+	// 解析MTU
+	mtu := uint16(data[6])<<8 | uint16(data[7])
+	info.Fields["mtu"] = fmt.Sprintf("%d", mtu)
+	
+	info.ExtraInfo = "Connection Accepted"
+}
+
+func (p *OracleParser) GetProtocol() string { return "oracle" }
+func (p *OracleParser) GetConfidence(data []byte) int {
+	if len(data) >= 8 {
+		packetType := data[4]
+		// 检查TNS包类型是否有效
+		if packetType >= 1 && packetType <= 19 {
+			return 85
+		}
+	}
+	return 0
+}
+
+// MongoDBParser MongoDB协议解析器
+type MongoDBParser struct{}
+
+func (p *MongoDBParser) Parse(data []byte) (*ParsedInfo, error) {
+	info := &ParsedInfo{
+		Protocol:   "mongodb",
+		Service:    "mongodb",
+		Product:    "MongoDB",
+		Fields:     make(map[string]string),
+		Confidence: 80,
+	}
+	
+	if len(data) < 16 {
+		return info, nil
+	}
+	
+	// MongoDB Wire Protocol 消息头解析
+	messageLength := int32(data[0]) | int32(data[1])<<8 | int32(data[2])<<16 | int32(data[3])<<24
+	requestID := int32(data[4]) | int32(data[5])<<8 | int32(data[6])<<16 | int32(data[7])<<24
+	responseTo := int32(data[8]) | int32(data[9])<<8 | int32(data[10])<<16 | int32(data[11])<<24
+	opCode := int32(data[12]) | int32(data[13])<<8 | int32(data[14])<<16 | int32(data[15])<<24
+	
+	info.Fields["message_length"] = fmt.Sprintf("%d", messageLength)
+	info.Fields["request_id"] = fmt.Sprintf("%d", requestID)
+	info.Fields["response_to"] = fmt.Sprintf("%d", responseTo)
+	info.Fields["opcode"] = fmt.Sprintf("%d", opCode)
+	
+	// 解析操作码
+	opcodeName := p.getMongoDBOpcodeName(opCode)
+	info.Fields["opcode_name"] = opcodeName
+	
+	// 如果是OP_REPLY，解析响应
+	if opCode == 1 && len(data) > 36 {
+		p.parseReplyMessage(data[16:], info)
+		info.Confidence = 95
+	}
+	
+	return info, nil
+}
+
+// getMongoDBOpcodeName 获取MongoDB操作码名称
+func (p *MongoDBParser) getMongoDBOpcodeName(opcode int32) string {
+	opcodes := map[int32]string{
+		1:    "OP_REPLY",
+		1000: "OP_MSG",
+		2001: "OP_UPDATE",
+		2002: "OP_INSERT",
+		2003: "OP_RESERVED",
+		2004: "OP_QUERY",
+		2005: "OP_GET_MORE",
+		2006: "OP_DELETE",
+		2007: "OP_KILL_CURSORS",
+		2013: "OP_COMPRESSED",
+	}
+	
+	if name, exists := opcodes[opcode]; exists {
+		return name
+	}
+	return fmt.Sprintf("Unknown (%d)", opcode)
+}
+
+// parseReplyMessage 解析MongoDB回复消息
+func (p *MongoDBParser) parseReplyMessage(data []byte, info *ParsedInfo) {
+	if len(data) < 20 {
+		return
+	}
+	
+	// OP_REPLY 结构
+	responseFlags := int32(data[0]) | int32(data[1])<<8 | int32(data[2])<<16 | int32(data[3])<<24
+	cursorID := int64(data[4]) | int64(data[5])<<8 | int64(data[6])<<16 | int64(data[7])<<24 |
+		int64(data[8])<<32 | int64(data[9])<<40 | int64(data[10])<<48 | int64(data[11])<<56
+	startingFrom := int32(data[12]) | int32(data[13])<<8 | int32(data[14])<<16 | int32(data[15])<<24
+	numberReturned := int32(data[16]) | int32(data[17])<<8 | int32(data[18])<<16 | int32(data[19])<<24
+	
+	info.Fields["response_flags"] = fmt.Sprintf("0x%08x", responseFlags)
+	info.Fields["cursor_id"] = fmt.Sprintf("%d", cursorID)
+	info.Fields["starting_from"] = fmt.Sprintf("%d", startingFrom)
+	info.Fields["number_returned"] = fmt.Sprintf("%d", numberReturned)
+	
+	// 解析响应标志
+	if responseFlags&0x01 != 0 {
+		info.Fields["cursor_not_found"] = "true"
+	}
+	if responseFlags&0x02 != 0 {
+		info.Fields["query_failure"] = "true"
+	}
+	
+	// 尝试解析第一个文档 (isMaster响应)
+	if len(data) > 20 && numberReturned > 0 {
+		p.parseIsMasterResponse(data[20:], info)
+	}
+}
+
+// parseIsMasterResponse 解析isMaster响应
+func (p *MongoDBParser) parseIsMasterResponse(data []byte, info *ParsedInfo) {
+	// 简化的BSON解析，查找版本信息
+	content := string(data)
+	
+	// 查找版本字符串
+	if strings.Contains(content, "version") {
+		// 尝试提取版本信息 (简化实现)
+		if idx := strings.Index(content, "version"); idx > 0 {
+			remaining := content[idx:]
+			if versionIdx := strings.Index(remaining, "\x02"); versionIdx > 0 {
+				// 这是一个简化的版本提取，实际应该完整解析BSON
+				info.ExtraInfo = "MongoDB Server Response"
+			}
+		}
+	}
+	
+	if strings.Contains(content, "ismaster") {
+		info.Fields["is_master"] = "true"
+		info.ExtraInfo = "MongoDB Master Server"
+	}
+}
+
+func (p *MongoDBParser) GetProtocol() string { return "mongodb" }
+func (p *MongoDBParser) GetConfidence(data []byte) int {
+	if len(data) >= 16 {
+		opCode := int32(data[12]) | int32(data[13])<<8 | int32(data[14])<<16 | int32(data[15])<<24
+		// 检查操作码是否有效
+		validOpcodes := []int32{1, 1000, 2001, 2002, 2004, 2005, 2006, 2007, 2013}
+		for _, validOp := range validOpcodes {
+			if opCode == validOp {
+				return 90
+			}
+		}
+	}
+	return 0
+}
+
+// ElasticsearchParser Elasticsearch协议解析器
+type ElasticsearchParser struct {
+	httpParser *HTTPParser
+}
+
+func NewElasticsearchParser() *ElasticsearchParser {
+	return &ElasticsearchParser{
+		httpParser: &HTTPParser{},
+	}
+}
+
+func (p *ElasticsearchParser) Parse(data []byte) (*ParsedInfo, error) {
+	// Elasticsearch使用HTTP协议，先解析HTTP
+	info, err := p.httpParser.Parse(data)
+	if err != nil {
+		return info, err
+	}
+	
+	// 修改协议信息
+	info.Protocol = "elasticsearch"
+	info.Service = "elasticsearch"
+	
+	content := string(data)
+	
+	// 检查Elasticsearch特征
+	if strings.Contains(content, "elasticsearch") || strings.Contains(content, "lucene_version") {
+		info.Product = "Elasticsearch"
+		info.Confidence = 95
+		
+		// 尝试解析版本信息
+		if strings.Contains(content, "\"version\"") {
+			p.parseElasticsearchVersion(content, info)
+		}
+		
+		// 检查集群信息
+		if strings.Contains(content, "cluster_name") {
+			info.ExtraInfo = "Elasticsearch Cluster"
+		}
+	}
+	
+	return info, nil
+}
+
+// parseElasticsearchVersion 解析Elasticsearch版本信息
+func (p *ElasticsearchParser) parseElasticsearchVersion(content string, info *ParsedInfo) {
+	// 查找版本信息的JSON模式
+	versionRe := regexp.MustCompile(`"version"\s*:\s*{\s*"number"\s*:\s*"([^"]+)"`)
+	if match := versionRe.FindStringSubmatch(content); len(match) > 1 {
+		info.Version = match[1]
+	}
+	
+	// 查找Lucene版本
+	luceneRe := regexp.MustCompile(`"lucene_version"\s*:\s*"([^"]+)"`)
+	if match := luceneRe.FindStringSubmatch(content); len(match) > 1 {
+		info.Fields["lucene_version"] = match[1]
+	}
+	
+	// 查找集群名称
+	clusterRe := regexp.MustCompile(`"cluster_name"\s*:\s*"([^"]+)"`)
+	if match := clusterRe.FindStringSubmatch(content); len(match) > 1 {
+		info.Fields["cluster_name"] = match[1]
+	}
+}
+
+func (p *ElasticsearchParser) GetProtocol() string { return "elasticsearch" }
+func (p *ElasticsearchParser) GetConfidence(data []byte) int {
+	content := strings.ToLower(string(data))
+	if strings.Contains(content, "elasticsearch") {
+		return 95
+	}
+	if strings.Contains(content, "lucene_version") {
+		return 90
+	}
+	return p.httpParser.GetConfidence(data)
+}
+
+// InfluxDBParser InfluxDB协议解析器
+type InfluxDBParser struct {
+	httpParser *HTTPParser
+}
+
+func NewInfluxDBParser() *InfluxDBParser {
+	return &InfluxDBParser{
+		httpParser: &HTTPParser{},
+	}
+}
+
+func (p *InfluxDBParser) Parse(data []byte) (*ParsedInfo, error) {
+	// InfluxDB使用HTTP协议，先解析HTTP
+	info, err := p.httpParser.Parse(data)
+	if err != nil {
+		return info, err
+	}
+	
+	// 修改协议信息
+	info.Protocol = "influxdb"
+	info.Service = "influxdb"
+	info.Product = "InfluxDB"
+	
+	content := string(data)
+	
+	// 检查InfluxDB特征
+	if strings.Contains(content, "X-Influxdb-Version") {
+		info.Confidence = 98
+		
+		// 提取版本信息
+		versionRe := regexp.MustCompile(`X-Influxdb-Version:\s*([^\r\n]+)`)
+		if match := versionRe.FindStringSubmatch(content); len(match) > 1 {
+			info.Version = strings.TrimSpace(match[1])
+		}
+	}
+	
+	// 检查ping响应
+	if strings.Contains(content, "/ping") && info.Fields["status_code"] == "204" {
+		info.ExtraInfo = "InfluxDB Ping Response"
+		info.Confidence = 95
+	}
+	
+	return info, nil
+}
+
+func (p *InfluxDBParser) GetProtocol() string { return "influxdb" }
+func (p *InfluxDBParser) GetConfidence(data []byte) int {
+	content := string(data)
+	if strings.Contains(content, "X-Influxdb-Version") {
+		return 95
+	}
+	return p.httpParser.GetConfidence(data)
+}
+
+// CassandraParser Cassandra协议解析器
+type CassandraParser struct{}
+
+func (p *CassandraParser) Parse(data []byte) (*ParsedInfo, error) {
+	info := &ParsedInfo{
+		Protocol:   "cassandra",
+		Service:    "cassandra",
+		Product:    "Apache Cassandra",
+		Fields:     make(map[string]string),
+		Confidence: 80,
+	}
+	
+	if len(data) < 9 {
+		return info, nil
+	}
+	
+	// Cassandra Native Protocol 响应解析
+	version := data[0]
+	flags := data[1]
+	streamID := uint16(data[2])<<8 | uint16(data[3])
+	opcode := data[4]
+	length := uint32(data[5])<<24 | uint32(data[6])<<16 | uint32(data[7])<<8 | uint32(data[8])
+	
+	info.Fields["protocol_version"] = fmt.Sprintf("%d", version)
+	info.Fields["flags"] = fmt.Sprintf("0x%02x", flags)
+	info.Fields["stream_id"] = fmt.Sprintf("%d", streamID)
+	info.Fields["opcode"] = fmt.Sprintf("0x%02x", opcode)
+	info.Fields["body_length"] = fmt.Sprintf("%d", length)
+	
+	// 解析操作码
+	opcodeName := p.getCassandraOpcodeName(opcode)
+	info.Fields["opcode_name"] = opcodeName
+	
+	// 如果是SUPPORTED响应，解析支持的选项
+	if opcode == 0x06 {
+		info.Confidence = 95
+		info.ExtraInfo = "Cassandra SUPPORTED Response"
+	}
+	
+	return info, nil
+}
+
+// getCassandraOpcodeName 获取Cassandra操作码名称
+func (p *CassandraParser) getCassandraOpcodeName(opcode byte) string {
+	opcodes := map[byte]string{
+		0x00: "ERROR",
+		0x01: "STARTUP",
+		0x02: "READY",
+		0x03: "AUTHENTICATE",
+		0x05: "OPTIONS",
+		0x06: "SUPPORTED",
+		0x07: "QUERY",
+		0x08: "RESULT",
+		0x09: "PREPARE",
+		0x0A: "EXECUTE",
+		0x0B: "REGISTER",
+		0x0C: "EVENT",
+		0x0D: "BATCH",
+		0x0E: "AUTH_CHALLENGE",
+		0x0F: "AUTH_RESPONSE",
+		0x10: "AUTH_SUCCESS",
+	}
+	
+	if name, exists := opcodes[opcode]; exists {
+		return name
+	}
+	return fmt.Sprintf("Unknown (0x%02x)", opcode)
+}
+
+func (p *CassandraParser) GetProtocol() string { return "cassandra" }
+func (p *CassandraParser) GetConfidence(data []byte) int {
+	if len(data) >= 9 {
+		version := data[0]
+		opcode := data[4]
+		// 检查协议版本和操作码是否有效
+		if version >= 3 && version <= 5 && opcode <= 0x10 {
+			return 85
+		}
+	}
+	return 0
+}
+
+// Neo4jParser Neo4j协议解析器
+type Neo4jParser struct{}
+
+func (p *Neo4jParser) Parse(data []byte) (*ParsedInfo, error) {
+	info := &ParsedInfo{
+		Protocol:   "neo4j",
+		Service:    "neo4j",
+		Product:    "Neo4j Graph Database",
+		Fields:     make(map[string]string),
+		Confidence: 80,
+	}
+	
+	if len(data) < 4 {
+		return info, nil
+	}
+	
+	// Neo4j Bolt协议握手响应
+	if len(data) == 4 {
+		// 协议版本响应
+		version := uint32(data[0])<<24 | uint32(data[1])<<16 | uint32(data[2])<<8 | uint32(data[3])
+		info.Fields["protocol_version"] = fmt.Sprintf("%d.%d", (version>>8)&0xFF, version&0xFF)
+		
+		if version != 0 {
+			info.Confidence = 95
+			info.ExtraInfo = "Neo4j Bolt Protocol Handshake"
+		}
+	} else {
+		// Bolt消息
+		p.parseBoltMessage(data, info)
+	}
+	
+	return info, nil
+}
+
+// parseBoltMessage 解析Bolt消息
+func (p *Neo4jParser) parseBoltMessage(data []byte, info *ParsedInfo) {
+	if len(data) < 2 {
+		return
+	}
+	
+	// Bolt消息结构: [chunk_size:2][chunk_data][0x00, 0x00]
+	chunkSize := uint16(data[0])<<8 | uint16(data[1])
+	info.Fields["chunk_size"] = fmt.Sprintf("%d", chunkSize)
+	
+	if chunkSize > 0 && len(data) > 2 {
+		// 解析消息类型 (PackStream格式)
+		if len(data) > 3 {
+			messageType := data[2]
+			info.Fields["message_type"] = fmt.Sprintf("0x%02x", messageType)
+			
+			// 常见的Bolt消息类型
+			switch messageType {
+			case 0x01:
+				info.Fields["message_name"] = "INIT"
+			case 0x0E:
+				info.Fields["message_name"] = "ACK_FAILURE"
+			case 0x0F:
+				info.Fields["message_name"] = "RESET"
+			case 0x10:
+				info.Fields["message_name"] = "RUN"
+			case 0x2F:
+				info.Fields["message_name"] = "DISCARD_ALL"
+			case 0x3F:
+				info.Fields["message_name"] = "PULL_ALL"
+			case 0x70:
+				info.Fields["message_name"] = "SUCCESS"
+				info.Confidence = 95
+			case 0x7E:
+				info.Fields["message_name"] = "IGNORED"
+			case 0x7F:
+				info.Fields["message_name"] = "FAILURE"
+			}
+		}
+	}
+}
+
+func (p *Neo4jParser) GetProtocol() string { return "neo4j" }
+func (p *Neo4jParser) GetConfidence(data []byte) int {
+	if len(data) == 4 {
+		// 协议版本响应
+		version := uint32(data[0])<<24 | uint32(data[1])<<16 | uint32(data[2])<<8 | uint32(data[3])
+		if version > 0 && version < 0x10000 {
+			return 90
+		}
+	}
+	return 0
+}
+
+// CoAPParser CoAP协议解析器
+type CoAPParser struct{}
+
+func (p *CoAPParser) Parse(data []byte) (*ParsedInfo, error) {
+	info := &ParsedInfo{
+		Protocol:   "coap",
+		Service:    "coap",
+		Product:    "CoAP Server",
+		Fields:     make(map[string]string),
+		Confidence: 80,
+	}
+	
+	if len(data) < 4 {
+		return info, nil
+	}
+	
+	// CoAP消息格式解析
+	versionType := data[0]
+	code := data[1]
+	messageID := uint16(data[2])<<8 | uint16(data[3])
+	
+	version := (versionType >> 6) & 0x03
+	messageType := (versionType >> 4) & 0x03
+	tokenLength := versionType & 0x0F
+	
+	info.Fields["version"] = fmt.Sprintf("%d", version)
+	info.Fields["message_type"] = fmt.Sprintf("%d", messageType)
+	info.Fields["token_length"] = fmt.Sprintf("%d", tokenLength)
+	info.Fields["code"] = fmt.Sprintf("%d", code)
+	info.Fields["message_id"] = fmt.Sprintf("%d", messageID)
+	
+	// 解析消息类型
+	messageTypeName := p.getCoAPMessageTypeName(messageType)
+	info.Fields["message_type_name"] = messageTypeName
+	
+	// 解析响应码
+	if code > 0 {
+		codeName := p.getCoAPCodeName(code)
+		info.Fields["code_name"] = codeName
+		info.Confidence = 95
+	}
+	
+	// 检查版本
+	if version == 1 {
+		info.Confidence = 90
+	}
+	
+	return info, nil
+}
+
+// getCoAPMessageTypeName 获取CoAP消息类型名称
+func (p *CoAPParser) getCoAPMessageTypeName(msgType byte) string {
+	types := map[byte]string{
+		0: "Confirmable (CON)",
+		1: "Non-confirmable (NON)",
+		2: "Acknowledgement (ACK)",
+		3: "Reset (RST)",
+	}
+	
+	if name, exists := types[msgType]; exists {
+		return name
+	}
+	return fmt.Sprintf("Unknown (%d)", msgType)
+}
+
+// getCoAPCodeName 获取CoAP响应码名称
+func (p *CoAPParser) getCoAPCodeName(code byte) string {
+	codes := map[byte]string{
+		0:   "Empty",
+		1:   "GET",
+		2:   "POST",
+		3:   "PUT",
+		4:   "DELETE",
+		65:  "2.01 Created",
+		66:  "2.02 Deleted",
+		67:  "2.03 Valid",
+		68:  "2.04 Changed",
+		69:  "2.05 Content",
+		128: "4.00 Bad Request",
+		129: "4.01 Unauthorized",
+		130: "4.02 Bad Option",
+		131: "4.03 Forbidden",
+		132: "4.04 Not Found",
+		160: "5.00 Internal Server Error",
+		161: "5.01 Not Implemented",
+		162: "5.02 Bad Gateway",
+		163: "5.03 Service Unavailable",
+		164: "5.04 Gateway Timeout",
+	}
+	
+	if name, exists := codes[code]; exists {
+		return name
+	}
+	
+	// 解析类别和详细码
+	class := code >> 5
+	detail := code & 0x1F
+	return fmt.Sprintf("%d.%02d", class, detail)
+}
+
+func (p *CoAPParser) GetProtocol() string { return "coap" }
+func (p *CoAPParser) GetConfidence(data []byte) int {
+	if len(data) >= 4 {
+		version := (data[0] >> 6) & 0x03
+		if version == 1 {
+			return 85
+		}
+	}
+	return 0
+}
+
+// LoRaWANParser LoRaWAN协议解析器
+type LoRaWANParser struct{}
+
+func (p *LoRaWANParser) Parse(data []byte) (*ParsedInfo, error) {
+	info := &ParsedInfo{
+		Protocol:   "lorawan",
+		Service:    "lorawan",
+		Product:    "LoRaWAN Gateway",
+		Fields:     make(map[string]string),
+		Confidence: 80,
+	}
+	
+	if len(data) < 4 {
+		return info, nil
+	}
+	
+	// LoRaWAN Semtech UDP协议解析
+	protocolVersion := data[0]
+	token := uint16(data[1])<<8 | uint16(data[2])
+	identifier := data[3]
+	
+	info.Fields["protocol_version"] = fmt.Sprintf("%d", protocolVersion)
+	info.Fields["token"] = fmt.Sprintf("0x%04x", token)
+	info.Fields["identifier"] = fmt.Sprintf("0x%02x", identifier)
+	
+	// 解析标识符
+	identifierName := p.getLoRaWANIdentifierName(identifier)
+	info.Fields["identifier_name"] = identifierName
+	
+	// 如果有网关EUI
+	if len(data) >= 12 {
+		gatewayEUI := data[4:12]
+		info.Fields["gateway_eui"] = hex.EncodeToString(gatewayEUI)
+		info.Confidence = 95
+	}
+	
+	// 检查协议版本
+	if protocolVersion == 1 || protocolVersion == 2 {
+		info.Confidence = 90
+	}
+	
+	return info, nil
+}
+
+// getLoRaWANIdentifierName 获取LoRaWAN标识符名称
+func (p *LoRaWANParser) getLoRaWANIdentifierName(id byte) string {
+	identifiers := map[byte]string{
+		0x00: "PUSH_DATA",
+		0x01: "PUSH_ACK",
+		0x02: "PULL_DATA",
+		0x03: "PULL_RESP",
+		0x04: "PULL_ACK",
+		0x05: "TX_ACK",
+	}
+	
+	if name, exists := identifiers[id]; exists {
+		return name
+	}
+	return fmt.Sprintf("Unknown (0x%02x)", id)
+}
+
+func (p *LoRaWANParser) GetProtocol() string { return "lorawan" }
+func (p *LoRaWANParser) GetConfidence(data []byte) int {
+	if len(data) >= 4 {
+		version := data[0]
+		identifier := data[3]
+		if (version == 1 || version == 2) && identifier <= 0x05 {
+			return 85
+		}
+	}
+	return 0
+}
+
+// AMQPParser AMQP协议解析器
+type AMQPParser struct{}
+
+func (p *AMQPParser) Parse(data []byte) (*ParsedInfo, error) {
+	info := &ParsedInfo{
+		Protocol:   "amqp",
+		Service:    "amqp",
+		Product:    "AMQP Broker",
+		Fields:     make(map[string]string),
+		Confidence: 80,
+	}
+	
+	if len(data) < 8 {
+		return info, nil
+	}
+	
+	// AMQP协议头检查
+	if string(data[0:4]) == "AMQP" {
+		info.Confidence = 95
+		info.Fields["protocol_header"] = "AMQP"
+		
+		// 解析版本信息
+		if len(data) >= 8 {
+			protocolID := data[4]
+			majorVersion := data[5]
+			minorVersion := data[6]
+			revision := data[7]
+			
+			info.Fields["protocol_id"] = fmt.Sprintf("%d", protocolID)
+			info.Version = fmt.Sprintf("%d.%d.%d", majorVersion, minorVersion, revision)
+			info.ExtraInfo = fmt.Sprintf("AMQP %s", info.Version)
+		}
+	} else {
+		// AMQP帧解析
+		p.parseAMQPFrame(data, info)
+	}
+	
+	return info, nil
+}
+
+// parseAMQPFrame 解析AMQP帧
+func (p *AMQPParser) parseAMQPFrame(data []byte, info *ParsedInfo) {
+	if len(data) < 8 {
+		return
+	}
+	
+	// AMQP帧结构: [type:1][channel:2][size:4][payload][frame_end:1]
+	frameType := data[0]
+	channel := uint16(data[1])<<8 | uint16(data[2])
+	size := uint32(data[3])<<24 | uint32(data[4])<<16 | uint32(data[5])<<8 | uint32(data[6])
+	
+	info.Fields["frame_type"] = fmt.Sprintf("%d", frameType)
+	info.Fields["channel"] = fmt.Sprintf("%d", channel)
+	info.Fields["frame_size"] = fmt.Sprintf("%d", size)
+	
+	// 解析帧类型
+	frameTypeName := p.getAMQPFrameTypeName(frameType)
+	info.Fields["frame_type_name"] = frameTypeName
+	
+	if frameType >= 1 && frameType <= 4 {
+		info.Confidence = 90
+	}
+}
+
+// getAMQPFrameTypeName 获取AMQP帧类型名称
+func (p *AMQPParser) getAMQPFrameTypeName(frameType byte) string {
+	types := map[byte]string{
+		1: "METHOD",
+		2: "HEADER",
+		3: "BODY",
+		4: "HEARTBEAT",
+	}
+	
+	if name, exists := types[frameType]; exists {
+		return name
+	}
+	return fmt.Sprintf("Unknown (%d)", frameType)
+}
+
+func (p *AMQPParser) GetProtocol() string { return "amqp" }
+func (p *AMQPParser) GetConfidence(data []byte) int {
+	if len(data) >= 4 && string(data[0:4]) == "AMQP" {
+		return 95
+	}
+	if len(data) >= 8 {
+		frameType := data[0]
+		if frameType >= 1 && frameType <= 4 {
+			return 80
+		}
+	}
+	return 0
+}
+// LDAPParser LDAP协议解析器
+type LDAPParser struct{}
+
+func (p *LDAPParser) Parse(data []byte) (*ParsedInfo, error) {
+	info := &ParsedInfo{
+		Protocol:   "ldap",
+		Service:    "ldap",
+		Product:    "LDAP Directory Server",
+		Fields:     make(map[string]string),
+		Confidence: 80,
+	}
+	
+	if len(data) < 2 {
+		return info, nil
+	}
+	
+	// LDAP使用ASN.1 BER编码
+	if data[0] == 0x30 { // SEQUENCE
+		info.Confidence = 85
+		
+		// 解析LDAP消息
+		if len(data) > 7 {
+			p.parseLDAPMessage(data, info)
+		}
+	}
+	
+	return info, nil
+}
+
+// parseLDAPMessage 解析LDAP消息
+func (p *LDAPParser) parseLDAPMessage(data []byte, info *ParsedInfo) {
+	// 简化的ASN.1解析
+	offset := 2 // 跳过SEQUENCE标签和长度
+	
+	if offset < len(data) {
+		// 消息ID
+		if data[offset] == 0x02 { // INTEGER
+			offset += 2 // 跳过标签和长度
+			if offset < len(data) {
+				messageID := data[offset]
+				info.Fields["message_id"] = fmt.Sprintf("%d", messageID)
+				offset++
+			}
+		}
+		
+		// 协议操作
+		if offset < len(data) {
+			opTag := data[offset]
+			info.Fields["operation_tag"] = fmt.Sprintf("0x%02x", opTag)
+			
+			// 解析操作类型
+			opName := p.getLDAPOperationName(opTag)
+			info.Fields["operation_name"] = opName
+			
+			if opTag == 0x61 { // bindResponse
+				info.Confidence = 95
+				info.ExtraInfo = "LDAP Bind Response"
+			}
+		}
+	}
+}
+
+// getLDAPOperationName 获取LDAP操作名称
+func (p *LDAPParser) getLDAPOperationName(tag byte) string {
+	operations := map[byte]string{
+		0x60: "bindRequest",
+		0x61: "bindResponse",
+		0x42: "unbindRequest",
+		0x63: "searchRequest",
+		0x64: "searchResEntry",
+		0x65: "searchResDone",
+		0x66: "modifyRequest",
+		0x67: "modifyResponse",
+		0x68: "addRequest",
+		0x69: "addResponse",
+		0x4A: "delRequest",
+		0x6B: "delResponse",
+		0x6C: "modDNRequest",
+		0x6D: "modDNResponse",
+		0x6E: "compareRequest",
+		0x6F: "compareResponse",
+		0x50: "abandonRequest",
+	}
+	
+	if name, exists := operations[tag]; exists {
+		return name
+	}
+	return fmt.Sprintf("Unknown (0x%02x)", tag)
+}
+
+func (p *LDAPParser) GetProtocol() string { return "ldap" }
+func (p *LDAPParser) GetConfidence(data []byte) int {
+	if len(data) >= 2 && data[0] == 0x30 {
+		return 75
+	}
+	return 0
+}
+
+// KerberosParser Kerberos协议解析器
+type KerberosParser struct{}
+
+func (p *KerberosParser) Parse(data []byte) (*ParsedInfo, error) {
+	info := &ParsedInfo{
+		Protocol:   "kerberos",
+		Service:    "kerberos",
+		Product:    "Kerberos KDC",
+		Fields:     make(map[string]string),
+		Confidence: 80,
+	}
+	
+	if len(data) < 3 {
+		return info, nil
+	}
+	
+	// Kerberos使用ASN.1 DER编码
+	if data[0] == 0x6A || data[0] == 0x6B { // APPLICATION tags
+		info.Confidence = 90
+		
+		// 解析Kerberos消息
+		p.parseKerberosMessage(data, info)
+	}
+	
+	return info, nil
+}
+
+// parseKerberosMessage 解析Kerberos消息
+func (p *KerberosParser) parseKerberosMessage(data []byte, info *ParsedInfo) {
+	appTag := data[0]
+	info.Fields["application_tag"] = fmt.Sprintf("0x%02x", appTag)
+	
+	// 解析应用标签
+	msgTypeName := p.getKerberosMessageTypeName(appTag)
+	info.Fields["message_type"] = msgTypeName
+	
+	switch appTag {
+	case 0x6A:
+		info.Fields["message_name"] = "AS-REQ"
+		info.ExtraInfo = "Authentication Server Request"
+	case 0x6B:
+		info.Fields["message_name"] = "AS-REP"
+		info.ExtraInfo = "Authentication Server Reply"
+		info.Confidence = 95
+	case 0x6C:
+		info.Fields["message_name"] = "TGS-REQ"
+		info.ExtraInfo = "Ticket Granting Server Request"
+	case 0x6D:
+		info.Fields["message_name"] = "TGS-REP"
+		info.ExtraInfo = "Ticket Granting Server Reply"
+		info.Confidence = 95
+	case 0x6E:
+		info.Fields["message_name"] = "AP-REQ"
+		info.ExtraInfo = "Application Request"
+	case 0x6F:
+		info.Fields["message_name"] = "AP-REP"
+		info.ExtraInfo = "Application Reply"
+	case 0x7E:
+		info.Fields["message_name"] = "KRB-ERROR"
+		info.ExtraInfo = "Kerberos Error"
+		info.Confidence = 95
+	}
+}
+
+// getKerberosMessageTypeName 获取Kerberos消息类型名称
+func (p *KerberosParser) getKerberosMessageTypeName(tag byte) string {
+	types := map[byte]string{
+		0x6A: "AS-REQ (10)",
+		0x6B: "AS-REP (11)",
+		0x6C: "TGS-REQ (12)",
+		0x6D: "TGS-REP (13)",
+		0x6E: "AP-REQ (14)",
+		0x6F: "AP-REP (15)",
+		0x7E: "KRB-ERROR (30)",
+	}
+	
+	if name, exists := types[tag]; exists {
+		return name
+	}
+	return fmt.Sprintf("Unknown (0x%02x)", tag)
+}
+
+func (p *KerberosParser) GetProtocol() string { return "kerberos" }
+func (p *KerberosParser) GetConfidence(data []byte) int {
+	if len(data) >= 1 {
+		tag := data[0]
+		if tag >= 0x6A && tag <= 0x6F || tag == 0x7E {
+			return 90
+		}
+	}
+	return 0
+}
+
+// RADIUSParser RADIUS协议解析器
+type RADIUSParser struct{}
+
+func (p *RADIUSParser) Parse(data []byte) (*ParsedInfo, error) {
+	info := &ParsedInfo{
+		Protocol:   "radius",
+		Service:    "radius",
+		Product:    "RADIUS Server",
+		Fields:     make(map[string]string),
+		Confidence: 80,
+	}
+	
+	if len(data) < 20 {
+		return info, nil
+	}
+	
+	// RADIUS包格式解析
+	code := data[0]
+	identifier := data[1]
+	length := uint16(data[2])<<8 | uint16(data[3])
+	
+	info.Fields["code"] = fmt.Sprintf("%d", code)
+	info.Fields["identifier"] = fmt.Sprintf("%d", identifier)
+	info.Fields["length"] = fmt.Sprintf("%d", length)
+	
+	// 解析代码类型
+	codeName := p.getRADIUSCodeName(code)
+	info.Fields["code_name"] = codeName
+	
+	// 响应包置信度更高
+	if code == 2 || code == 3 || code == 11 {
+		info.Confidence = 95
+	}
+	
+	// 解析属性 (如果有)
+	if len(data) > 20 {
+		p.parseRADIUSAttributes(data[20:], info)
+	}
+	
+	return info, nil
+}
+
+// getRADIUSCodeName 获取RADIUS代码名称
+func (p *RADIUSParser) getRADIUSCodeName(code byte) string {
+	codes := map[byte]string{
+		1:  "Access-Request",
+		2:  "Access-Accept",
+		3:  "Access-Reject",
+		4:  "Accounting-Request",
+		5:  "Accounting-Response",
+		11: "Access-Challenge",
+		12: "Status-Server",
+		13: "Status-Client",
+	}
+	
+	if name, exists := codes[code]; exists {
+		return name
+	}
+	return fmt.Sprintf("Unknown (%d)", code)
+}
+
+// parseRADIUSAttributes 解析RADIUS属性
+func (p *RADIUSParser) parseRADIUSAttributes(data []byte, info *ParsedInfo) {
+	offset := 0
+	attrCount := 0
+	
+	for offset+2 < len(data) && attrCount < 5 { // 限制解析数量
+		attrType := data[offset]
+		attrLength := data[offset+1]
+		
+		if attrLength < 2 || offset+int(attrLength) > len(data) {
+			break
+		}
+		
+		attrName := p.getRADIUSAttributeName(attrType)
+		info.Fields[fmt.Sprintf("attr_%d_type", attrCount)] = fmt.Sprintf("%d (%s)", attrType, attrName)
+		info.Fields[fmt.Sprintf("attr_%d_length", attrCount)] = fmt.Sprintf("%d", attrLength)
+		
+		offset += int(attrLength)
+		attrCount++
+	}
+	
+	if attrCount > 0 {
+		info.Fields["attribute_count"] = fmt.Sprintf("%d", attrCount)
+	}
+}
+
+// getRADIUSAttributeName 获取RADIUS属性名称
+func (p *RADIUSParser) getRADIUSAttributeName(attrType byte) string {
+	attributes := map[byte]string{
+		1:  "User-Name",
+		2:  "User-Password",
+		3:  "CHAP-Password",
+		4:  "NAS-IP-Address",
+		5:  "NAS-Port",
+		6:  "Service-Type",
+		7:  "Framed-Protocol",
+		8:  "Framed-IP-Address",
+		18: "Reply-Message",
+		25: "Class",
+		26: "Vendor-Specific",
+	}
+	
+	if name, exists := attributes[attrType]; exists {
+		return name
+	}
+	return "Unknown"
+}
+
+func (p *RADIUSParser) GetProtocol() string { return "radius" }
+func (p *RADIUSParser) GetConfidence(data []byte) int {
+	if len(data) >= 20 {
+		code := data[0]
+		length := uint16(data[2])<<8 | uint16(data[3])
+		
+		// 检查代码和长度是否合理
+		if code >= 1 && code <= 13 && length >= 20 && int(length) <= len(data) {
+			return 85
+		}
+	}
+	return 0
+}
+
+// NTPParser NTP协议解析器
+type NTPParser struct{}
+
+func (p *NTPParser) Parse(data []byte) (*ParsedInfo, error) {
+	info := &ParsedInfo{
+		Protocol:   "ntp",
+		Service:    "ntp",
+		Product:    "NTP Server",
+		Fields:     make(map[string]string),
+		Confidence: 80,
+	}
+	
+	if len(data) < 48 {
+		return info, nil
+	}
+	
+	// NTP包格式解析
+	liVnMode := data[0]
+	stratum := data[1]
+	poll := data[2]
+	precision := int8(data[3])
+	
+	li := (liVnMode >> 6) & 0x03
+	vn := (liVnMode >> 3) & 0x07
+	mode := liVnMode & 0x07
+	
+	info.Fields["leap_indicator"] = fmt.Sprintf("%d", li)
+	info.Fields["version"] = fmt.Sprintf("%d", vn)
+	info.Fields["mode"] = fmt.Sprintf("%d", mode)
+	info.Fields["stratum"] = fmt.Sprintf("%d", stratum)
+	info.Fields["poll"] = fmt.Sprintf("%d", poll)
+	info.Fields["precision"] = fmt.Sprintf("%d", precision)
+	
+	// 解析模式
+	modeName := p.getNTPModeName(mode)
+	info.Fields["mode_name"] = modeName
+	
+	// 解析层级
+	stratumName := p.getNTPStratumName(stratum)
+	info.Fields["stratum_name"] = stratumName
+	
+	// NTP服务器响应
+	if mode == 4 {
+		info.Confidence = 95
+		info.ExtraInfo = "NTP Server Response"
+	}
+	
+	// 检查版本
+	if vn >= 3 && vn <= 4 {
+		info.Version = fmt.Sprintf("v%d", vn)
+	}
+	
+	return info, nil
+}
+
+// getNTPModeName 获取NTP模式名称
+func (p *NTPParser) getNTPModeName(mode byte) string {
+	modes := map[byte]string{
+		0: "Reserved",
+		1: "Symmetric Active",
+		2: "Symmetric Passive",
+		3: "Client",
+		4: "Server",
+		5: "Broadcast",
+		6: "Control Message",
+		7: "Private Use",
+	}
+	
+	if name, exists := modes[mode]; exists {
+		return name
+	}
+	return fmt.Sprintf("Unknown (%d)", mode)
+}
+
+// getNTPStratumName 获取NTP层级名称
+func (p *NTPParser) getNTPStratumName(stratum byte) string {
+	switch {
+	case stratum == 0:
+		return "Unspecified/Invalid"
+	case stratum == 1:
+		return "Primary Reference"
+	case stratum >= 2 && stratum <= 15:
+		return "Secondary Reference"
+	case stratum == 16:
+		return "Unsynchronized"
+	default:
+		return "Reserved"
+	}
+}
+
+func (p *NTPParser) GetProtocol() string { return "ntp" }
+func (p *NTPParser) GetConfidence(data []byte) int {
+	if len(data) >= 48 {
+		liVnMode := data[0]
+		vn := (liVnMode >> 3) & 0x07
+		mode := liVnMode & 0x07
+		
+		// 检查版本和模式是否有效
+		if vn >= 3 && vn <= 4 && mode <= 7 {
+			return 85
+		}
+	}
+	return 0
+}
+
+// SyslogParser Syslog协议解析器
+type SyslogParser struct{}
+
+func (p *SyslogParser) Parse(data []byte) (*ParsedInfo, error) {
+	info := &ParsedInfo{
+		Protocol:   "syslog",
+		Service:    "syslog",
+		Product:    "Syslog Server",
+		Fields:     make(map[string]string),
+		Confidence: 70,
+	}
+	
+	content := string(data)
+	
+	// Syslog消息格式: <priority>timestamp hostname tag: message
+	syslogRe := regexp.MustCompile(`^<(\d+)>(.*)`)
+	if match := syslogRe.FindStringSubmatch(content); len(match) > 2 {
+		priority, _ := strconv.Atoi(match[1])
+		facility := priority >> 3
+		severity := priority & 0x07
+		
+		info.Fields["priority"] = fmt.Sprintf("%d", priority)
+		info.Fields["facility"] = fmt.Sprintf("%d", facility)
+		info.Fields["severity"] = fmt.Sprintf("%d", severity)
+		info.Fields["facility_name"] = p.getSyslogFacilityName(facility)
+		info.Fields["severity_name"] = p.getSyslogSeverityName(severity)
+		
+		info.Confidence = 90
+		info.ExtraInfo = fmt.Sprintf("Syslog %s.%s", info.Fields["facility_name"], info.Fields["severity_name"])
+	}
+	
+	return info, nil
+}
+
+// getSyslogFacilityName 获取Syslog设施名称
+func (p *SyslogParser) getSyslogFacilityName(facility int) string {
+	facilities := map[int]string{
+		0:  "kernel",
+		1:  "user",
+		2:  "mail",
+		3:  "daemon",
+		4:  "auth",
+		5:  "syslog",
+		6:  "lpr",
+		7:  "news",
+		8:  "uucp",
+		9:  "cron",
+		10: "authpriv",
+		11: "ftp",
+		16: "local0",
+		17: "local1",
+		18: "local2",
+		19: "local3",
+		20: "local4",
+		21: "local5",
+		22: "local6",
+		23: "local7",
+	}
+	
+	if name, exists := facilities[facility]; exists {
+		return name
+	}
+	return fmt.Sprintf("unknown(%d)", facility)
+}
+
+// getSyslogSeverityName 获取Syslog严重性名称
+func (p *SyslogParser) getSyslogSeverityName(severity int) string {
+	severities := map[int]string{
+		0: "emerg",
+		1: "alert",
+		2: "crit",
+		3: "err",
+		4: "warning",
+		5: "notice",
+		6: "info",
+		7: "debug",
+	}
+	
+	if name, exists := severities[severity]; exists {
+		return name
+	}
+	return fmt.Sprintf("unknown(%d)", severity)
+}
+
+func (p *SyslogParser) GetProtocol() string { return "syslog" }
+func (p *SyslogParser) GetConfidence(data []byte) int {
+	content := string(data)
+	if regexp.MustCompile(`^<\d+>`).MatchString(content) {
+		return 85
+	}
+	return 0
+}
+
+// OpenVPNParser OpenVPN协议解析器
+type OpenVPNParser struct{}
+
+func (p *OpenVPNParser) Parse(data []byte) (*ParsedInfo, error) {
+	info := &ParsedInfo{
+		Protocol:   "openvpn",
+		Service:    "openvpn",
+		Product:    "OpenVPN Server",
+		Fields:     make(map[string]string),
+		Confidence: 80,
+	}
+	
+	if len(data) < 1 {
+		return info, nil
+	}
+	
+	// OpenVPN包格式解析
+	opcodeKeyID := data[0]
+	opcode := (opcodeKeyID >> 3) & 0x1F
+	keyID := opcodeKeyID & 0x07
+	
+	info.Fields["opcode"] = fmt.Sprintf("%d", opcode)
+	info.Fields["key_id"] = fmt.Sprintf("%d", keyID)
+	
+	// 解析操作码
+	opcodeName := p.getOpenVPNOpcodeName(opcode)
+	info.Fields["opcode_name"] = opcodeName
+	
+	// 如果是服务器响应
+	if opcode == 8 || opcode == 9 { // P_CONTROL_HARD_RESET_SERVER_V2 或其他服务器响应
+		info.Confidence = 95
+		info.ExtraInfo = "OpenVPN Server Response"
+	}
+	
+	// 解析会话ID (如果存在)
+	if len(data) >= 9 {
+		sessionID := data[1:9]
+		info.Fields["session_id"] = hex.EncodeToString(sessionID)
+	}
+	
+	return info, nil
+}
+
+// getOpenVPNOpcodeName 获取OpenVPN操作码名称
+func (p *OpenVPNParser) getOpenVPNOpcodeName(opcode byte) string {
+	opcodes := map[byte]string{
+		1:  "P_CONTROL_HARD_RESET_CLIENT_V1",
+		2:  "P_CONTROL_HARD_RESET_SERVER_V1",
+		3:  "P_CONTROL_SOFT_RESET_V1",
+		4:  "P_CONTROL_V1",
+		5:  "P_ACK_V1",
+		6:  "P_DATA_V1",
+		7:  "P_CONTROL_HARD_RESET_CLIENT_V2",
+		8:  "P_CONTROL_HARD_RESET_SERVER_V2",
+		9:  "P_CONTROL_WKC_V1",
+		10: "P_CONTROL_V2",
+	}
+	
+	if name, exists := opcodes[opcode]; exists {
+		return name
+	}
+	return fmt.Sprintf("Unknown (%d)", opcode)
+}
+
+func (p *OpenVPNParser) GetProtocol() string { return "openvpn" }
+func (p *OpenVPNParser) GetConfidence(data []byte) int {
+	if len(data) >= 1 {
+		opcodeKeyID := data[0]
+		opcode := (opcodeKeyID >> 3) & 0x1F
+		
+		// 检查操作码是否有效
+		if opcode >= 1 && opcode <= 10 {
+			return 85
+		}
+	}
+	return 0
+}
+
+// WireGuardParser WireGuard协议解析器
+type WireGuardParser struct{}
+
+func (p *WireGuardParser) Parse(data []byte) (*ParsedInfo, error) {
+	info := &ParsedInfo{
+		Protocol:   "wireguard",
+		Service:    "wireguard",
+		Product:    "WireGuard VPN",
+		Fields:     make(map[string]string),
+		Confidence: 80,
+	}
+	
+	if len(data) < 4 {
+		return info, nil
+	}
+	
+	// WireGuard消息类型解析
+	messageType := uint32(data[0]) | uint32(data[1])<<8 | uint32(data[2])<<16 | uint32(data[3])<<24
+	
+	info.Fields["message_type"] = fmt.Sprintf("%d", messageType)
+	
+	// 解析消息类型
+	messageTypeName := p.getWireGuardMessageTypeName(messageType)
+	info.Fields["message_type_name"] = messageTypeName
+	
+	switch messageType {
+	case 1:
+		// Handshake Initiation
+		if len(data) >= 148 {
+			senderIndex := uint32(data[8]) | uint32(data[9])<<8 | uint32(data[10])<<16 | uint32(data[11])<<24
+			info.Fields["sender_index"] = fmt.Sprintf("0x%08x", senderIndex)
+			info.Confidence = 95
+		}
+	case 2:
+		// Handshake Response
+		if len(data) >= 92 {
+			senderIndex := uint32(data[8]) | uint32(data[9])<<8 | uint32(data[10])<<16 | uint32(data[11])<<24
+			receiverIndex := uint32(data[12]) | uint32(data[13])<<8 | uint32(data[14])<<16 | uint32(data[15])<<24
+			info.Fields["sender_index"] = fmt.Sprintf("0x%08x", senderIndex)
+			info.Fields["receiver_index"] = fmt.Sprintf("0x%08x", receiverIndex)
+			info.Confidence = 98
+			info.ExtraInfo = "WireGuard Handshake Response"
+		}
+	case 4:
+		// Transport Data
+		if len(data) >= 16 {
+			receiverIndex := uint32(data[4]) | uint32(data[5])<<8 | uint32(data[6])<<16 | uint32(data[7])<<24
+			counter := uint64(data[8]) | uint64(data[9])<<8 | uint64(data[10])<<16 | uint64(data[11])<<24 |
+				uint64(data[12])<<32 | uint64(data[13])<<40 | uint64(data[14])<<48 | uint64(data[15])<<56
+			info.Fields["receiver_index"] = fmt.Sprintf("0x%08x", receiverIndex)
+			info.Fields["counter"] = fmt.Sprintf("%d", counter)
+			info.Confidence = 90
+		}
+	}
+	
+	return info, nil
+}
+
+// getWireGuardMessageTypeName 获取WireGuard消息类型名称
+func (p *WireGuardParser) getWireGuardMessageTypeName(msgType uint32) string {
+	types := map[uint32]string{
+		1: "Handshake Initiation",
+		2: "Handshake Response",
+		3: "Cookie Reply",
+		4: "Transport Data",
+	}
+	
+	if name, exists := types[msgType]; exists {
+		return name
+	}
+	return fmt.Sprintf("Unknown (%d)", msgType)
+}
+
+func (p *WireGuardParser) GetProtocol() string { return "wireguard" }
+func (p *WireGuardParser) GetConfidence(data []byte) int {
+	if len(data) >= 4 {
+		messageType := uint32(data[0]) | uint32(data[1])<<8 | uint32(data[2])<<16 | uint32(data[3])<<24
+		
+		// 检查消息类型是否有效
+		if messageType >= 1 && messageType <= 4 {
+			return 85
+		}
+	}
+	return 0
+}
+
+// SIPParser SIP协议解析器
+type SIPParser struct{}
+
+func (p *SIPParser) Parse(data []byte) (*ParsedInfo, error) {
+	content := string(data)
+	info := &ParsedInfo{
+		Protocol:   "sip",
+		Service:    "sip",
+		Product:    "SIP Server",
+		Fields:     make(map[string]string),
+		Confidence: 80,
+	}
+	
+	lines := strings.Split(content, "\r\n")
+	if len(lines) == 0 {
+		lines = strings.Split(content, "\n")
+	}
+	
+	if len(lines) > 0 {
+		firstLine := strings.TrimSpace(lines[0])
+		info.Fields["first_line"] = firstLine
+		
+		// 检查是否为SIP响应
+		sipResponseRe := regexp.MustCompile(`^SIP/(\d+\.\d+)\s+(\d+)\s*(.*)`)
+		if match := sipResponseRe.FindStringSubmatch(firstLine); len(match) > 3 {
+			info.Fields["sip_version"] = match[1]
+			info.Fields["status_code"] = match[2]
+			info.Fields["reason_phrase"] = strings.TrimSpace(match[3])
+			info.Confidence = 95
+			info.ExtraInfo = fmt.Sprintf("SIP %s %s", match[2], match[3])
+		}
+		
+		// 检查是否为SIP请求
+		sipRequestRe := regexp.MustCompile(`^(OPTIONS|INVITE|ACK|BYE|CANCEL|REGISTER)\s+(.+?)\s+SIP/(\d+\.\d+)`)
+		if match := sipRequestRe.FindStringSubmatch(firstLine); len(match) > 3 {
+			info.Fields["method"] = match[1]
+			info.Fields["request_uri"] = match[2]
+			info.Fields["sip_version"] = match[3]
+			info.Confidence = 90
+		}
+		
+		// 解析SIP头部
+		for i := 1; i < len(lines) && i < 10; i++ {
+			line := strings.TrimSpace(lines[i])
+			if line == "" {
+				break
+			}
+			
+			if colonIdx := strings.Index(line, ":"); colonIdx > 0 {
+				key := strings.ToLower(strings.TrimSpace(line[:colonIdx]))
+				value := strings.TrimSpace(line[colonIdx+1:])
+				
+				switch key {
+				case "user-agent", "server":
+					info.Fields["user_agent"] = value
+					p.parseSIPUserAgent(value, info)
+				case "via":
+					info.Fields["via"] = value
+				case "call-id":
+					info.Fields["call_id"] = value
+				case "cseq":
+					info.Fields["cseq"] = value
+				}
+			}
+		}
+	}
+	
+	return info, nil
+}
+
+// parseSIPUserAgent 解析SIP User-Agent
+func (p *SIPParser) parseSIPUserAgent(userAgent string, info *ParsedInfo) {
+	// 检测常见的SIP服务器
+	userAgentLower := strings.ToLower(userAgent)
+	
+	if strings.Contains(userAgentLower, "asterisk") {
+		info.Product = "Asterisk PBX"
+		if versionRe := regexp.MustCompile(`asterisk\s+(\d+\.\d+\.\d+)`); versionRe.MatchString(userAgentLower) {
+			if match := versionRe.FindStringSubmatch(userAgentLower); len(match) > 1 {
+				info.Version = match[1]
+			}
+		}
+	} else if strings.Contains(userAgentLower, "opensips") {
+		info.Product = "OpenSIPS"
+	} else if strings.Contains(userAgentLower, "kamailio") {
+		info.Product = "Kamailio"
+	} else if strings.Contains(userAgentLower, "freeswitch") {
+		info.Product = "FreeSWITCH"
+	}
+}
+
+func (p *SIPParser) GetProtocol() string { return "sip" }
+func (p *SIPParser) GetConfidence(data []byte) int {
+	content := string(data)
+	if strings.Contains(content, "SIP/2.0") || regexp.MustCompile(`^(OPTIONS|INVITE|ACK|BYE|CANCEL|REGISTER)`).MatchString(content) {
+		return 90
+	}
+	return 0
+}
+
+// DockerParser Docker API协议解析器
+type DockerParser struct {
+	httpParser *HTTPParser
+}
+
+func NewDockerParser() *DockerParser {
+	return &DockerParser{
+		httpParser: &HTTPParser{},
+	}
+}
+
+func (p *DockerParser) Parse(data []byte) (*ParsedInfo, error) {
+	// Docker API使用HTTP协议，先解析HTTP
+	info, err := p.httpParser.Parse(data)
+	if err != nil {
+		return info, err
+	}
+	
+	// 修改协议信息
+	info.Protocol = "docker"
+	info.Service = "docker"
+	info.Product = "Docker Engine"
+	
+	content := string(data)
+	
+	// 检查Docker API特征
+	if strings.Contains(content, "Docker") || strings.Contains(content, "docker") {
+		info.Confidence = 95
+		
+		// 尝试解析版本信息
+		if strings.Contains(content, "\"Version\"") {
+			p.parseDockerVersion(content, info)
+		}
+		
+		// 检查API版本
+		if strings.Contains(content, "\"ApiVersion\"") {
+			apiVersionRe := regexp.MustCompile(`"ApiVersion"\s*:\s*"([^"]+)"`)
+			if match := apiVersionRe.FindStringSubmatch(content); len(match) > 1 {
+				info.Fields["api_version"] = match[1]
+			}
+		}
+	}
+	
+	return info, nil
+}
+
+// parseDockerVersion 解析Docker版本信息
+func (p *DockerParser) parseDockerVersion(content string, info *ParsedInfo) {
+	// 查找版本信息的JSON模式
+	versionRe := regexp.MustCompile(`"Version"\s*:\s*"([^"]+)"`)
+	if match := versionRe.FindStringSubmatch(content); len(match) > 1 {
+		info.Version = match[1]
+	}
+	
+	// 查找Git提交
+	gitCommitRe := regexp.MustCompile(`"GitCommit"\s*:\s*"([^"]+)"`)
+	if match := gitCommitRe.FindStringSubmatch(content); len(match) > 1 {
+		info.Fields["git_commit"] = match[1]
+	}
+	
+	// 查找操作系统
+	osRe := regexp.MustCompile(`"Os"\s*:\s*"([^"]+)"`)
+	if match := osRe.FindStringSubmatch(content); len(match) > 1 {
+		info.OS = match[1]
+	}
+	
+	// 查找架构
+	archRe := regexp.MustCompile(`"Arch"\s*:\s*"([^"]+)"`)
+	if match := archRe.FindStringSubmatch(content); len(match) > 1 {
+		info.Fields["architecture"] = match[1]
+	}
+}
+
+func (p *DockerParser) GetProtocol() string { return "docker" }
+func (p *DockerParser) GetConfidence(data []byte) int {
+	content := strings.ToLower(string(data))
+	if strings.Contains(content, "docker") && strings.Contains(content, "version") {
+		return 95
+	}
+	return p.httpParser.GetConfidence(data)
+}
+
+// KubernetesParser Kubernetes API协议解析器
+type KubernetesParser struct {
+	httpParser *HTTPParser
+}
+
+func NewKubernetesParser() *KubernetesParser {
+	return &KubernetesParser{
+		httpParser: &HTTPParser{},
+	}
+}
+
+func (p *KubernetesParser) Parse(data []byte) (*ParsedInfo, error) {
+	// Kubernetes API使用HTTP协议，先解析HTTP
+	info, err := p.httpParser.Parse(data)
+	if err != nil {
+		return info, err
+	}
+	
+	// 修改协议信息
+	info.Protocol = "kubernetes"
+	info.Service = "kubernetes"
+	info.Product = "Kubernetes API Server"
+	
+	content := string(data)
+	
+	// 检查Kubernetes API特征
+	if strings.Contains(content, "kubernetes") || strings.Contains(content, "k8s.io") {
+		info.Confidence = 95
+		
+		// 尝试解析版本信息
+		if strings.Contains(content, "\"major\"") && strings.Contains(content, "\"minor\"") {
+			p.parseKubernetesVersion(content, info)
+		}
+		
+		// 检查API组
+		if strings.Contains(content, "\"groups\"") {
+			info.ExtraInfo = "Kubernetes API Groups"
+		}
+	}
+	
+	return info, nil
+}
+
+// parseKubernetesVersion 解析Kubernetes版本信息
+func (p *KubernetesParser) parseKubernetesVersion(content string, info *ParsedInfo) {
+	// 查找主版本号
+	majorRe := regexp.MustCompile(`"major"\s*:\s*"([^"]+)"`)
+	var major, minor string
+	
+	if match := majorRe.FindStringSubmatch(content); len(match) > 1 {
+		major = match[1]
+	}
+	
+	// 查找次版本号
+	minorRe := regexp.MustCompile(`"minor"\s*:\s*"([^"]+)"`)
+	if match := minorRe.FindStringSubmatch(content); len(match) > 1 {
+		minor = match[1]
+	}
+	
+	if major != "" && minor != "" {
+		info.Version = fmt.Sprintf("%s.%s", major, minor)
+	}
+	
+	// 查找Git版本
+	gitVersionRe := regexp.MustCompile(`"gitVersion"\s*:\s*"([^"]+)"`)
+	if match := gitVersionRe.FindStringSubmatch(content); len(match) > 1 {
+		info.Fields["git_version"] = match[1]
+	}
+	
+	// 查找构建日期
+	buildDateRe := regexp.MustCompile(`"buildDate"\s*:\s*"([^"]+)"`)
+	if match := buildDateRe.FindStringSubmatch(content); len(match) > 1 {
+		info.Fields["build_date"] = match[1]
+	}
+}
+
+func (p *KubernetesParser) GetProtocol() string { return "kubernetes" }
+func (p *KubernetesParser) GetConfidence(data []byte) int {
+	content := strings.ToLower(string(data))
+	if strings.Contains(content, "kubernetes") || strings.Contains(content, "k8s.io") {
+		return 95
+	}
+	return p.httpParser.GetConfidence(data)
 }

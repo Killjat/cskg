@@ -65,6 +65,38 @@ func (pe *ProbeEngine) loadBuiltinParsers() {
 	pe.parsers["bacnet"] = &BACnetParser{}
 	pe.parsers["opcua"] = &OPCUAParser{}
 	pe.parsers["s7"] = &S7Parser{}
+	
+	// 数据库协议解析器
+	pe.parsers["sqlserver"] = &SQLServerParser{}
+	pe.parsers["oracle"] = &OracleParser{}
+	pe.parsers["mongodb"] = &MongoDBParser{}
+	pe.parsers["elasticsearch"] = NewElasticsearchParser()
+	pe.parsers["influxdb"] = NewInfluxDBParser()
+	pe.parsers["cassandra"] = &CassandraParser{}
+	pe.parsers["neo4j"] = &Neo4jParser{}
+	
+	// IoT协议解析器
+	pe.parsers["coap"] = &CoAPParser{}
+	pe.parsers["lorawan"] = &LoRaWANParser{}
+	pe.parsers["amqp"] = &AMQPParser{}
+	
+	// 企业基础设施协议解析器
+	pe.parsers["ldap"] = &LDAPParser{}
+	pe.parsers["kerberos"] = &KerberosParser{}
+	pe.parsers["radius"] = &RADIUSParser{}
+	pe.parsers["ntp"] = &NTPParser{}
+	pe.parsers["syslog"] = &SyslogParser{}
+	
+	// 安全协议解析器
+	pe.parsers["openvpn"] = &OpenVPNParser{}
+	pe.parsers["wireguard"] = &WireGuardParser{}
+	
+	// 电信协议解析器
+	pe.parsers["sip"] = &SIPParser{}
+	
+	// 云服务协议解析器
+	pe.parsers["docker"] = NewDockerParser()
+	pe.parsers["kubernetes"] = NewKubernetesParser()
 }
 
 // ProbeTarget 探测单个目标
@@ -489,6 +521,46 @@ func (pe *ProbeEngine) generateStructuredBanner(data []byte, protocol string, pa
 		return pe.generateOPCUABanner(parsedInfo)
 	case "s7":
 		return pe.generateS7Banner(parsedInfo)
+	case "sqlserver":
+		return pe.generateSQLServerBanner(parsedInfo)
+	case "oracle":
+		return pe.generateOracleBanner(parsedInfo)
+	case "mongodb":
+		return pe.generateMongoDBBanner(parsedInfo)
+	case "elasticsearch":
+		return pe.generateElasticsearchBanner(parsedInfo)
+	case "influxdb":
+		return pe.generateInfluxDBBanner(parsedInfo)
+	case "cassandra":
+		return pe.generateCassandraBanner(parsedInfo)
+	case "neo4j":
+		return pe.generateNeo4jBanner(parsedInfo)
+	case "coap":
+		return pe.generateCoAPBanner(parsedInfo)
+	case "lorawan":
+		return pe.generateLoRaWANBanner(parsedInfo)
+	case "amqp":
+		return pe.generateAMQPBanner(parsedInfo)
+	case "ldap":
+		return pe.generateLDAPBanner(parsedInfo)
+	case "kerberos":
+		return pe.generateKerberosBanner(parsedInfo)
+	case "radius":
+		return pe.generateRADIUSBanner(parsedInfo)
+	case "ntp":
+		return pe.generateNTPBanner(parsedInfo)
+	case "syslog":
+		return pe.generateSyslogBanner(parsedInfo)
+	case "openvpn":
+		return pe.generateOpenVPNBanner(parsedInfo)
+	case "wireguard":
+		return pe.generateWireGuardBanner(parsedInfo)
+	case "sip":
+		return pe.generateSIPBanner(parsedInfo)
+	case "docker":
+		return pe.generateDockerBanner(parsedInfo)
+	case "kubernetes":
+		return pe.generateKubernetesBanner(parsedInfo)
 	case "ftp":
 		return pe.generateFTPBanner(parsedInfo)
 	case "smtp":
@@ -1304,6 +1376,732 @@ func (pe *ProbeEngine) generateS7Banner(info *ParsedInfo) string {
 	if destRef, exists := info.Fields["destination_reference"]; exists {
 		banner.WriteString(" | DestRef: ")
 		banner.WriteString(destRef)
+	}
+	
+	// 额外信息
+	if info.ExtraInfo != "" {
+		banner.WriteString(" | ")
+		banner.WriteString(info.ExtraInfo)
+	}
+	
+	return banner.String()
+}
+// generateSQLServerBanner 生成SQL Server结构化banner
+func (pe *ProbeEngine) generateSQLServerBanner(info *ParsedInfo) string {
+	var banner strings.Builder
+	
+	// SQL Server产品信息
+	if info.Product != "" {
+		banner.WriteString(info.Product)
+		if info.Version != "" {
+			banner.WriteString(" ")
+			banner.WriteString(info.Version)
+		}
+	}
+	
+	// TDS信息
+	if tdsTypeName, exists := info.Fields["tds_type_name"]; exists {
+		if banner.Len() > 0 {
+			banner.WriteString(" | ")
+		}
+		banner.WriteString("TDS: ")
+		banner.WriteString(tdsTypeName)
+	}
+	
+	// Token信息
+	if tokenName, exists := info.Fields["token_name"]; exists {
+		banner.WriteString(" | Token: ")
+		banner.WriteString(tokenName)
+	}
+	
+	// 额外信息
+	if info.ExtraInfo != "" {
+		banner.WriteString(" | ")
+		banner.WriteString(info.ExtraInfo)
+	}
+	
+	return banner.String()
+}
+
+// generateOracleBanner 生成Oracle结构化banner
+func (pe *ProbeEngine) generateOracleBanner(info *ParsedInfo) string {
+	var banner strings.Builder
+	
+	// Oracle产品信息
+	if info.Product != "" {
+		banner.WriteString(info.Product)
+	}
+	
+	// TNS包类型
+	if packetTypeName, exists := info.Fields["packet_type_name"]; exists {
+		if banner.Len() > 0 {
+			banner.WriteString(" | ")
+		}
+		banner.WriteString("TNS: ")
+		banner.WriteString(packetTypeName)
+	}
+	
+	// TNS版本
+	if tnsVersion, exists := info.Fields["tns_version"]; exists {
+		banner.WriteString(" | TNS v")
+		banner.WriteString(tnsVersion)
+	}
+	
+	// SDU大小
+	if sduSize, exists := info.Fields["sdu_size"]; exists {
+		banner.WriteString(" | SDU: ")
+		banner.WriteString(sduSize)
+	}
+	
+	// 额外信息
+	if info.ExtraInfo != "" {
+		banner.WriteString(" | ")
+		banner.WriteString(info.ExtraInfo)
+	}
+	
+	return banner.String()
+}
+
+// generateMongoDBBanner 生成MongoDB结构化banner
+func (pe *ProbeEngine) generateMongoDBBanner(info *ParsedInfo) string {
+	var banner strings.Builder
+	
+	// MongoDB产品信息
+	if info.Product != "" {
+		banner.WriteString(info.Product)
+	}
+	
+	// 操作码信息
+	if opcodeName, exists := info.Fields["opcode_name"]; exists {
+		if banner.Len() > 0 {
+			banner.WriteString(" | ")
+		}
+		banner.WriteString("Op: ")
+		banner.WriteString(opcodeName)
+	}
+	
+	// 响应标志
+	if responseFlags, exists := info.Fields["response_flags"]; exists && responseFlags != "0x00000000" {
+		banner.WriteString(" | Flags: ")
+		banner.WriteString(responseFlags)
+	}
+	
+	// 返回文档数
+	if numberReturned, exists := info.Fields["number_returned"]; exists {
+		banner.WriteString(" | Docs: ")
+		banner.WriteString(numberReturned)
+	}
+	
+	// 额外信息
+	if info.ExtraInfo != "" {
+		banner.WriteString(" | ")
+		banner.WriteString(info.ExtraInfo)
+	}
+	
+	return banner.String()
+}
+
+// generateElasticsearchBanner 生成Elasticsearch结构化banner
+func (pe *ProbeEngine) generateElasticsearchBanner(info *ParsedInfo) string {
+	var banner strings.Builder
+	
+	// Elasticsearch产品信息
+	if info.Product != "" {
+		banner.WriteString(info.Product)
+		if info.Version != "" {
+			banner.WriteString(" v")
+			banner.WriteString(info.Version)
+		}
+	}
+	
+	// HTTP状态
+	if statusLine, exists := info.Fields["status_line"]; exists {
+		if banner.Len() > 0 {
+			banner.WriteString(" | ")
+		}
+		banner.WriteString(statusLine)
+	}
+	
+	// Lucene版本
+	if luceneVersion, exists := info.Fields["lucene_version"]; exists {
+		banner.WriteString(" | Lucene: ")
+		banner.WriteString(luceneVersion)
+	}
+	
+	// 集群名称
+	if clusterName, exists := info.Fields["cluster_name"]; exists {
+		banner.WriteString(" | Cluster: ")
+		banner.WriteString(clusterName)
+	}
+	
+	return banner.String()
+}
+
+// generateInfluxDBBanner 生成InfluxDB结构化banner
+func (pe *ProbeEngine) generateInfluxDBBanner(info *ParsedInfo) string {
+	var banner strings.Builder
+	
+	// InfluxDB产品信息
+	if info.Product != "" {
+		banner.WriteString(info.Product)
+		if info.Version != "" {
+			banner.WriteString(" v")
+			banner.WriteString(info.Version)
+		}
+	}
+	
+	// HTTP状态
+	if statusLine, exists := info.Fields["status_line"]; exists {
+		if banner.Len() > 0 {
+			banner.WriteString(" | ")
+		}
+		banner.WriteString(statusLine)
+	}
+	
+	// 额外信息
+	if info.ExtraInfo != "" {
+		banner.WriteString(" | ")
+		banner.WriteString(info.ExtraInfo)
+	}
+	
+	return banner.String()
+}
+
+// generateCassandraBanner 生成Cassandra结构化banner
+func (pe *ProbeEngine) generateCassandraBanner(info *ParsedInfo) string {
+	var banner strings.Builder
+	
+	// Cassandra产品信息
+	if info.Product != "" {
+		banner.WriteString(info.Product)
+	}
+	
+	// 协议版本
+	if protocolVersion, exists := info.Fields["protocol_version"]; exists {
+		if banner.Len() > 0 {
+			banner.WriteString(" | ")
+		}
+		banner.WriteString("Protocol v")
+		banner.WriteString(protocolVersion)
+	}
+	
+	// 操作码
+	if opcodeName, exists := info.Fields["opcode_name"]; exists {
+		banner.WriteString(" | Op: ")
+		banner.WriteString(opcodeName)
+	}
+	
+	// 额外信息
+	if info.ExtraInfo != "" {
+		banner.WriteString(" | ")
+		banner.WriteString(info.ExtraInfo)
+	}
+	
+	return banner.String()
+}
+
+// generateNeo4jBanner 生成Neo4j结构化banner
+func (pe *ProbeEngine) generateNeo4jBanner(info *ParsedInfo) string {
+	var banner strings.Builder
+	
+	// Neo4j产品信息
+	if info.Product != "" {
+		banner.WriteString(info.Product)
+	}
+	
+	// 协议版本
+	if protocolVersion, exists := info.Fields["protocol_version"]; exists {
+		if banner.Len() > 0 {
+			banner.WriteString(" | ")
+		}
+		banner.WriteString("Bolt v")
+		banner.WriteString(protocolVersion)
+	}
+	
+	// 消息类型
+	if messageName, exists := info.Fields["message_name"]; exists {
+		banner.WriteString(" | ")
+		banner.WriteString(messageName)
+	}
+	
+	// 额外信息
+	if info.ExtraInfo != "" {
+		banner.WriteString(" | ")
+		banner.WriteString(info.ExtraInfo)
+	}
+	
+	return banner.String()
+}
+
+// generateCoAPBanner 生成CoAP结构化banner
+func (pe *ProbeEngine) generateCoAPBanner(info *ParsedInfo) string {
+	var banner strings.Builder
+	
+	// CoAP产品信息
+	if info.Product != "" {
+		banner.WriteString(info.Product)
+	}
+	
+	// 版本信息
+	if version, exists := info.Fields["version"]; exists {
+		if banner.Len() > 0 {
+			banner.WriteString(" | ")
+		}
+		banner.WriteString("CoAP v")
+		banner.WriteString(version)
+	}
+	
+	// 消息类型
+	if messageTypeName, exists := info.Fields["message_type_name"]; exists {
+		banner.WriteString(" | ")
+		banner.WriteString(messageTypeName)
+	}
+	
+	// 响应码
+	if codeName, exists := info.Fields["code_name"]; exists {
+		banner.WriteString(" | ")
+		banner.WriteString(codeName)
+	}
+	
+	return banner.String()
+}
+
+// generateLoRaWANBanner 生成LoRaWAN结构化banner
+func (pe *ProbeEngine) generateLoRaWANBanner(info *ParsedInfo) string {
+	var banner strings.Builder
+	
+	// LoRaWAN产品信息
+	if info.Product != "" {
+		banner.WriteString(info.Product)
+	}
+	
+	// 协议版本
+	if protocolVersion, exists := info.Fields["protocol_version"]; exists {
+		if banner.Len() > 0 {
+			banner.WriteString(" | ")
+		}
+		banner.WriteString("Protocol v")
+		banner.WriteString(protocolVersion)
+	}
+	
+	// 标识符
+	if identifierName, exists := info.Fields["identifier_name"]; exists {
+		banner.WriteString(" | ")
+		banner.WriteString(identifierName)
+	}
+	
+	// 网关EUI
+	if gatewayEUI, exists := info.Fields["gateway_eui"]; exists {
+		banner.WriteString(" | Gateway: ")
+		banner.WriteString(gatewayEUI)
+	}
+	
+	return banner.String()
+}
+
+// generateAMQPBanner 生成AMQP结构化banner
+func (pe *ProbeEngine) generateAMQPBanner(info *ParsedInfo) string {
+	var banner strings.Builder
+	
+	// AMQP产品信息
+	if info.Product != "" {
+		banner.WriteString(info.Product)
+		if info.Version != "" {
+			banner.WriteString(" v")
+			banner.WriteString(info.Version)
+		}
+	}
+	
+	// 协议头部
+	if protocolHeader, exists := info.Fields["protocol_header"]; exists {
+		if banner.Len() > 0 {
+			banner.WriteString(" | ")
+		}
+		banner.WriteString(protocolHeader)
+	}
+	
+	// 帧类型
+	if frameTypeName, exists := info.Fields["frame_type_name"]; exists {
+		banner.WriteString(" | Frame: ")
+		banner.WriteString(frameTypeName)
+	}
+	
+	// 额外信息
+	if info.ExtraInfo != "" {
+		banner.WriteString(" | ")
+		banner.WriteString(info.ExtraInfo)
+	}
+	
+	return banner.String()
+}
+
+// generateLDAPBanner 生成LDAP结构化banner
+func (pe *ProbeEngine) generateLDAPBanner(info *ParsedInfo) string {
+	var banner strings.Builder
+	
+	// LDAP产品信息
+	if info.Product != "" {
+		banner.WriteString(info.Product)
+	}
+	
+	// 操作名称
+	if operationName, exists := info.Fields["operation_name"]; exists {
+		if banner.Len() > 0 {
+			banner.WriteString(" | ")
+		}
+		banner.WriteString("Op: ")
+		banner.WriteString(operationName)
+	}
+	
+	// 消息ID
+	if messageID, exists := info.Fields["message_id"]; exists {
+		banner.WriteString(" | MsgID: ")
+		banner.WriteString(messageID)
+	}
+	
+	// 额外信息
+	if info.ExtraInfo != "" {
+		banner.WriteString(" | ")
+		banner.WriteString(info.ExtraInfo)
+	}
+	
+	return banner.String()
+}
+
+// generateKerberosBanner 生成Kerberos结构化banner
+func (pe *ProbeEngine) generateKerberosBanner(info *ParsedInfo) string {
+	var banner strings.Builder
+	
+	// Kerberos产品信息
+	if info.Product != "" {
+		banner.WriteString(info.Product)
+	}
+	
+	// 消息名称
+	if messageName, exists := info.Fields["message_name"]; exists {
+		if banner.Len() > 0 {
+			banner.WriteString(" | ")
+		}
+		banner.WriteString(messageName)
+	}
+	
+	// 额外信息
+	if info.ExtraInfo != "" {
+		banner.WriteString(" | ")
+		banner.WriteString(info.ExtraInfo)
+	}
+	
+	return banner.String()
+}
+
+// generateRADIUSBanner 生成RADIUS结构化banner
+func (pe *ProbeEngine) generateRADIUSBanner(info *ParsedInfo) string {
+	var banner strings.Builder
+	
+	// RADIUS产品信息
+	if info.Product != "" {
+		banner.WriteString(info.Product)
+	}
+	
+	// 代码名称
+	if codeName, exists := info.Fields["code_name"]; exists {
+		if banner.Len() > 0 {
+			banner.WriteString(" | ")
+		}
+		banner.WriteString(codeName)
+	}
+	
+	// 属性数量
+	if attrCount, exists := info.Fields["attribute_count"]; exists {
+		banner.WriteString(" | Attrs: ")
+		banner.WriteString(attrCount)
+	}
+	
+	return banner.String()
+}
+
+// generateNTPBanner 生成NTP结构化banner
+func (pe *ProbeEngine) generateNTPBanner(info *ParsedInfo) string {
+	var banner strings.Builder
+	
+	// NTP产品信息
+	if info.Product != "" {
+		banner.WriteString(info.Product)
+		if info.Version != "" {
+			banner.WriteString(" ")
+			banner.WriteString(info.Version)
+		}
+	}
+	
+	// 模式名称
+	if modeName, exists := info.Fields["mode_name"]; exists {
+		if banner.Len() > 0 {
+			banner.WriteString(" | ")
+		}
+		banner.WriteString(modeName)
+	}
+	
+	// 层级信息
+	if stratumName, exists := info.Fields["stratum_name"]; exists {
+		banner.WriteString(" | ")
+		banner.WriteString(stratumName)
+		
+		if stratum, exists := info.Fields["stratum"]; exists {
+			banner.WriteString(" (")
+			banner.WriteString(stratum)
+			banner.WriteString(")")
+		}
+	}
+	
+	// 额外信息
+	if info.ExtraInfo != "" {
+		banner.WriteString(" | ")
+		banner.WriteString(info.ExtraInfo)
+	}
+	
+	return banner.String()
+}
+
+// generateSyslogBanner 生成Syslog结构化banner
+func (pe *ProbeEngine) generateSyslogBanner(info *ParsedInfo) string {
+	var banner strings.Builder
+	
+	// Syslog产品信息
+	if info.Product != "" {
+		banner.WriteString(info.Product)
+	}
+	
+	// 设施和严重性
+	if facilityName, exists := info.Fields["facility_name"]; exists {
+		if banner.Len() > 0 {
+			banner.WriteString(" | ")
+		}
+		banner.WriteString("Facility: ")
+		banner.WriteString(facilityName)
+	}
+	
+	if severityName, exists := info.Fields["severity_name"]; exists {
+		banner.WriteString(" | Severity: ")
+		banner.WriteString(severityName)
+	}
+	
+	// 优先级
+	if priority, exists := info.Fields["priority"]; exists {
+		banner.WriteString(" | Priority: ")
+		banner.WriteString(priority)
+	}
+	
+	// 额外信息
+	if info.ExtraInfo != "" {
+		banner.WriteString(" | ")
+		banner.WriteString(info.ExtraInfo)
+	}
+	
+	return banner.String()
+}
+
+// generateOpenVPNBanner 生成OpenVPN结构化banner
+func (pe *ProbeEngine) generateOpenVPNBanner(info *ParsedInfo) string {
+	var banner strings.Builder
+	
+	// OpenVPN产品信息
+	if info.Product != "" {
+		banner.WriteString(info.Product)
+	}
+	
+	// 操作码名称
+	if opcodeName, exists := info.Fields["opcode_name"]; exists {
+		if banner.Len() > 0 {
+			banner.WriteString(" | ")
+		}
+		banner.WriteString(opcodeName)
+	}
+	
+	// Key ID
+	if keyID, exists := info.Fields["key_id"]; exists {
+		banner.WriteString(" | KeyID: ")
+		banner.WriteString(keyID)
+	}
+	
+	// 会话ID
+	if sessionID, exists := info.Fields["session_id"]; exists {
+		banner.WriteString(" | Session: ")
+		banner.WriteString(sessionID[:16]) // 显示前16个字符
+		banner.WriteString("...")
+	}
+	
+	// 额外信息
+	if info.ExtraInfo != "" {
+		banner.WriteString(" | ")
+		banner.WriteString(info.ExtraInfo)
+	}
+	
+	return banner.String()
+}
+
+// generateWireGuardBanner 生成WireGuard结构化banner
+func (pe *ProbeEngine) generateWireGuardBanner(info *ParsedInfo) string {
+	var banner strings.Builder
+	
+	// WireGuard产品信息
+	if info.Product != "" {
+		banner.WriteString(info.Product)
+	}
+	
+	// 消息类型名称
+	if messageTypeName, exists := info.Fields["message_type_name"]; exists {
+		if banner.Len() > 0 {
+			banner.WriteString(" | ")
+		}
+		banner.WriteString(messageTypeName)
+	}
+	
+	// 发送者索引
+	if senderIndex, exists := info.Fields["sender_index"]; exists {
+		banner.WriteString(" | Sender: ")
+		banner.WriteString(senderIndex)
+	}
+	
+	// 接收者索引
+	if receiverIndex, exists := info.Fields["receiver_index"]; exists {
+		banner.WriteString(" | Receiver: ")
+		banner.WriteString(receiverIndex)
+	}
+	
+	// 额外信息
+	if info.ExtraInfo != "" {
+		banner.WriteString(" | ")
+		banner.WriteString(info.ExtraInfo)
+	}
+	
+	return banner.String()
+}
+
+// generateSIPBanner 生成SIP结构化banner
+func (pe *ProbeEngine) generateSIPBanner(info *ParsedInfo) string {
+	var banner strings.Builder
+	
+	// SIP产品信息
+	if info.Product != "" {
+		banner.WriteString(info.Product)
+	}
+	
+	// SIP版本和状态
+	if sipVersion, exists := info.Fields["sip_version"]; exists {
+		if banner.Len() > 0 {
+			banner.WriteString(" | ")
+		}
+		banner.WriteString("SIP/")
+		banner.WriteString(sipVersion)
+		
+		if statusCode, exists := info.Fields["status_code"]; exists {
+			banner.WriteString(" ")
+			banner.WriteString(statusCode)
+			
+			if reasonPhrase, exists := info.Fields["reason_phrase"]; exists {
+				banner.WriteString(" ")
+				banner.WriteString(reasonPhrase)
+			}
+		}
+	}
+	
+	// 方法 (对于请求)
+	if method, exists := info.Fields["method"]; exists {
+		if banner.Len() > 0 {
+			banner.WriteString(" | ")
+		}
+		banner.WriteString("Method: ")
+		banner.WriteString(method)
+	}
+	
+	// User-Agent
+	if userAgent, exists := info.Fields["user_agent"]; exists {
+		banner.WriteString(" | UA: ")
+		banner.WriteString(userAgent)
+	}
+	
+	// 额外信息
+	if info.ExtraInfo != "" {
+		banner.WriteString(" | ")
+		banner.WriteString(info.ExtraInfo)
+	}
+	
+	return banner.String()
+}
+
+// generateDockerBanner 生成Docker结构化banner
+func (pe *ProbeEngine) generateDockerBanner(info *ParsedInfo) string {
+	var banner strings.Builder
+	
+	// Docker产品信息
+	if info.Product != "" {
+		banner.WriteString(info.Product)
+		if info.Version != "" {
+			banner.WriteString(" v")
+			banner.WriteString(info.Version)
+		}
+	}
+	
+	// HTTP状态
+	if statusLine, exists := info.Fields["status_line"]; exists {
+		if banner.Len() > 0 {
+			banner.WriteString(" | ")
+		}
+		banner.WriteString(statusLine)
+	}
+	
+	// API版本
+	if apiVersion, exists := info.Fields["api_version"]; exists {
+		banner.WriteString(" | API: ")
+		banner.WriteString(apiVersion)
+	}
+	
+	// 操作系统
+	if info.OS != "" {
+		banner.WriteString(" | OS: ")
+		banner.WriteString(info.OS)
+	}
+	
+	// 架构
+	if arch, exists := info.Fields["architecture"]; exists {
+		banner.WriteString(" | Arch: ")
+		banner.WriteString(arch)
+	}
+	
+	return banner.String()
+}
+
+// generateKubernetesBanner 生成Kubernetes结构化banner
+func (pe *ProbeEngine) generateKubernetesBanner(info *ParsedInfo) string {
+	var banner strings.Builder
+	
+	// Kubernetes产品信息
+	if info.Product != "" {
+		banner.WriteString(info.Product)
+		if info.Version != "" {
+			banner.WriteString(" v")
+			banner.WriteString(info.Version)
+		}
+	}
+	
+	// HTTP状态
+	if statusLine, exists := info.Fields["status_line"]; exists {
+		if banner.Len() > 0 {
+			banner.WriteString(" | ")
+		}
+		banner.WriteString(statusLine)
+	}
+	
+	// Git版本
+	if gitVersion, exists := info.Fields["git_version"]; exists {
+		banner.WriteString(" | Git: ")
+		banner.WriteString(gitVersion)
+	}
+	
+	// 构建日期
+	if buildDate, exists := info.Fields["build_date"]; exists {
+		banner.WriteString(" | Built: ")
+		banner.WriteString(buildDate)
 	}
 	
 	// 额外信息

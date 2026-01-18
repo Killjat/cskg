@@ -22,10 +22,22 @@ var (
 	stats      = flag.Bool("stats", false, "显示统计信息")
 	probeMode  = flag.String("probe-mode", "all", "探测模式 (port/all/smart)")
 	protocolStats = flag.Bool("protocol-stats", false, "显示协议支持统计")
+	
+	// FOFA测试相关参数
+	fofaTest     = flag.Bool("fofa-test", false, "运行FOFA协议检测测试")
+	fofaConfig   = flag.String("fofa-config", "fofa_config.json", "FOFA配置文件路径")
+	fofaProtocol = flag.String("fofa-protocol", "", "测试单个协议 (留空测试所有协议)")
+	fofaOutput   = flag.String("fofa-output", "", "FOFA测试报告输出文件")
 )
 
 func main() {
 	flag.Parse()
+	
+	// 检查是否运行FOFA测试
+	if *fofaTest {
+		runFOFATest()
+		return
+	}
 	
 	fmt.Println("🔍 网络探测引擎")
 	fmt.Println("=" + strings.Repeat("=", 30))
@@ -303,4 +315,142 @@ func printUsage() {
 	fmt.Println("  go run . -target 127.0.0.1:8080 -probe-mode smart")
 	fmt.Println("  # 探测非标准端口服务（如22端口的HTTP）")
 	fmt.Println("  go run . -target example.com:22 -probe-mode all -verbose")
+}
+
+// runFOFATest 运行FOFA测试
+func runFOFATest() {
+	fmt.Println("🔍 FOFA协议检测能力测试工具")
+	fmt.Println(strings.Repeat("=", 50))
+
+	// 创建FOFA测试器
+	tester, err := NewFOFATester(*fofaConfig)
+	if err != nil {
+		fmt.Printf("❌ 初始化FOFA测试器失败: %v\n", err)
+		fmt.Println("\n💡 请确保:")
+		fmt.Println("1. 创建 fofa_config.json 配置文件")
+		fmt.Println("2. 填入正确的FOFA邮箱和API Key")
+		fmt.Println("3. 确保网络连接正常")
+		return
+	}
+
+	// 创建探测引擎
+	probeEngine := NewProbeEngine(DefaultProbeConfig())
+	if probeEngine == nil {
+		fmt.Println("❌ 初始化探测引擎失败")
+		return
+	}
+
+	fmt.Printf("✅ 探测引擎初始化完成，支持 %d 种协议\n", len(probeEngine.probes))
+
+	// 执行测试
+	if *fofaProtocol != "" {
+		// 测试单个协议
+		err = testSingleProtocol(tester, probeEngine, *fofaProtocol)
+	} else {
+		// 测试所有协议
+		err = testAllProtocols(tester, probeEngine, *fofaOutput)
+	}
+
+	if err != nil {
+		fmt.Printf("❌ 测试执行失败: %v\n", err)
+		return
+	}
+}
+
+// testSingleProtocol 测试单个协议
+func testSingleProtocol(tester *FOFATester, engine *ProbeEngine, protocolName string) error {
+	queries := GetProtocolQueries()
+	query, exists := queries[protocolName]
+	if !exists {
+		return fmt.Errorf("不支持的协议: %s", protocolName)
+	}
+
+	fmt.Printf("🎯 测试协议: %s\n", protocolName)
+	fmt.Printf("📝 查询语句: %s\n", query)
+
+	result, err := tester.TestProtocol(protocolName, query, engine)
+	if err != nil {
+		return err
+	}
+
+	// 打印详细结果
+	printProtocolResult(result)
+	return nil
+}
+
+// testAllProtocols 测试所有协议
+func testAllProtocols(tester *FOFATester, engine *ProbeEngine, outputFile string) error {
+	// 运行完整测试
+	report, err := tester.RunFullTest(engine)
+	if err != nil {
+		return err
+	}
+
+	// 打印报告
+	report.PrintReport()
+
+	// 保存报告
+	if outputFile == "" {
+		timestamp := time.Now().Format("20060102_150405")
+		outputFile = fmt.Sprintf("fofa_test_report_%s.json", timestamp)
+	}
+
+	err = report.SaveReport(outputFile)
+	if err != nil {
+		fmt.Printf("⚠️  保存报告失败: %v\n", err)
+	} else {
+		fmt.Printf("\n💾 测试报告已保存: %s\n", outputFile)
+	}
+
+	// 详细输出
+	if *verbose {
+		fmt.Println("\n📋 详细测试结果:")
+		fmt.Println(strings.Repeat("=", 80))
+		for _, result := range report.Results {
+			printProtocolResult(result)
+		}
+	}
+
+	return nil
+}
+
+// printProtocolResult 打印协议测试结果
+func printProtocolResult(result *ProtocolTestResult) {
+	fmt.Printf("\n🔍 协议: %s\n", result.Protocol)
+	fmt.Printf("📊 找到目标: %d 个\n", result.TargetsFound)
+
+	if result.TargetsFound == 0 {
+		fmt.Println("⚠️  未找到相关资产")
+		return
+	}
+
+	successCount := 0
+	for _, testResult := range result.Results {
+		if testResult.Success {
+			successCount++
+		}
+	}
+
+	successRate := float64(successCount) / float64(result.TargetsFound) * 100
+	fmt.Printf("✅ 成功检测: %d/%d (%.1f%%)\n", successCount, result.TargetsFound, successRate)
+
+	if *verbose {
+		fmt.Println("\n详细结果:")
+		for i, testResult := range result.Results {
+			fmt.Printf("  [%d] %s", i+1, testResult.Target)
+			if testResult.Success {
+				fmt.Printf(" ✅ %s (置信度: %d%%)", testResult.DetectedProtocol, testResult.Confidence)
+				if testResult.Banner != "" {
+					fmt.Printf("\n      Banner: %s", testResult.Banner)
+				}
+			} else {
+				fmt.Printf(" ❌")
+				if testResult.Error != "" {
+					fmt.Printf(" 错误: %s", testResult.Error)
+				}
+			}
+			fmt.Printf("\n      FOFA信息: %s | %s | %s\n", 
+				testResult.FOFAInfo.Country, testResult.FOFAInfo.Title, testResult.FOFAInfo.Server)
+		}
+	}
 }
