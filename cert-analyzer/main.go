@@ -28,6 +28,10 @@ var (
 	maxSearchResults int
 	searchTimeout   time.Duration
 	configFile      string
+	enableAdvanced  bool
+	enableThreatIntel bool
+	enablePhishing  bool
+	enableDGA       bool
 )
 
 func main() {
@@ -69,6 +73,12 @@ certificate information from websites and outputs results in JSON format.`,
 	rootCmd.Flags().IntVar(&maxSearchResults, "max-search-results", 20, "Maximum number of related sites to find")
 	rootCmd.Flags().DurationVar(&searchTimeout, "search-timeout", 30*time.Second, "Search timeout")
 	rootCmd.Flags().StringVar(&configFile, "config", "", "Configuration file for API keys (JSON format)")
+	
+	// 高级分析参数
+	rootCmd.Flags().BoolVar(&enableAdvanced, "enable-advanced", false, "Enable advanced security analysis")
+	rootCmd.Flags().BoolVar(&enableThreatIntel, "enable-threat-intel", false, "Enable threat intelligence analysis")
+	rootCmd.Flags().BoolVar(&enablePhishing, "enable-phishing", false, "Enable phishing detection")
+	rootCmd.Flags().BoolVar(&enableDGA, "enable-dga", false, "Enable DGA (Domain Generation Algorithm) detection")
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
@@ -115,6 +125,18 @@ func runAnalysis(cmd *cobra.Command, args []string) {
 		}
 
 		config.SearchConfig = searchConfig
+	}
+
+	// 配置高级分析功能
+	if enableAdvanced || enableThreatIntel || enablePhishing || enableDGA {
+		advancedConfig := &AdvancedAnalysisConfig{
+			EnableThreatIntel:    enableThreatIntel || enableAdvanced,
+			EnablePhishingDetect: enablePhishing || enableAdvanced,
+			EnableDGADetection:   enableDGA || enableAdvanced,
+			EnableTimelineAnalysis: enableAdvanced,
+		}
+
+		config.AdvancedConfig = advancedConfig
 	}
 
 	// 创建分析器

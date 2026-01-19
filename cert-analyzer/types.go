@@ -75,14 +75,15 @@ type SecurityAnalysis struct {
 
 // CertificateResult 完整的证书分析结果
 type CertificateResult struct {
-	URL               string            `json:"url"`
-	Timestamp         time.Time         `json:"timestamp"`
-	Status            string            `json:"status"`
-	Error             string            `json:"error,omitempty"`
-	Certificate       *CertificateInfo  `json:"certificate,omitempty"`
-	CertificateChain  []CertificateInfo `json:"certificate_chain,omitempty"`
-	SecurityAnalysis  *SecurityAnalysis `json:"security_analysis,omitempty"`
-	ConnectionInfo    *ConnectionInfo   `json:"connection_info,omitempty"`
+	URL               string                   `json:"url"`
+	Timestamp         time.Time                `json:"timestamp"`
+	Status            string                   `json:"status"`
+	Error             string                   `json:"error,omitempty"`
+	Certificate       *CertificateInfo         `json:"certificate,omitempty"`
+	CertificateChain  []CertificateInfo        `json:"certificate_chain,omitempty"`
+	SecurityAnalysis  *SecurityAnalysis        `json:"security_analysis,omitempty"`
+	AdvancedAnalysis  *AdvancedAnalysisResult  `json:"advanced_analysis,omitempty"`
+	ConnectionInfo    *ConnectionInfo          `json:"connection_info,omitempty"`
 }
 
 // ConnectionInfo 连接信息
@@ -123,6 +124,7 @@ type Config struct {
 	UserAgent       string                   `json:"user_agent"`
 	Verbose         bool                     `json:"verbose"`
 	SearchConfig    *CertificateSearchConfig `json:"search_config,omitempty"`
+	AdvancedConfig  *AdvancedAnalysisConfig  `json:"advanced_config,omitempty"`
 }
 
 // CertificateChain 证书链

@@ -2,14 +2,28 @@
 
 ## 功能特性
 
+### 基础功能
 - 探测目标网站的SSL/TLS证书
 - 提取证书关键信息（颁发者、有效期、主题、SAN等）
 - 分析证书链完整性
 - 检测证书安全性问题
+- 支持批量URL检测
+- 结果以JSON/CSV格式输出
+
+### 高级安全分析 ⭐
+- **威胁情报分析**: 基于IOC匹配的恶意证书检测
+- **钓鱼检测**: 品牌拼写错误、同形异义字符攻击检测
+- **DGA检测**: 基于熵值和模式的域名生成算法检测
+- **时间线分析**: 证书签发时间异常检测
+- **异常检测**: 多维度证书异常行为分析
+- **风险评分**: 0-100分的综合安全评分
+- **智能建议**: 基于分析结果的安全建议
+
+### 相关网站搜索
 - **搜索使用相同证书的其他网站**
 - 支持多种搜索引擎（FOFA、Shodan、Censys、crt.sh）
-- 支持批量URL检测
-- 结果以JSON格式输出
+- 基础设施关联分析
+- 威胁情报扩展
 
 ## 使用方法
 
@@ -28,14 +42,24 @@
 ./cert-analyzer -url https://example.com -output results.json
 ```
 
-### 启用相关网站搜索
+### 启用高级安全分析
 ```bash
-./cert-analyzer -url https://example.com --enable-search --search-methods "crtsh,fofa" --config config.json
+./cert-analyzer -u https://example.com --enable-advanced
 ```
 
-### 批量检测并搜索相关网站
+### 威胁情报和钓鱼检测
 ```bash
-./cert-analyzer -file urls.txt --enable-search --max-search-results 50 --config config.json
+./cert-analyzer -u https://example.com --enable-threat-intel --enable-phishing
+```
+
+### DGA检测
+```bash
+./cert-analyzer -u https://example.com --enable-dga
+```
+
+### 综合分析（搜索 + 高级分析）
+```bash
+./cert-analyzer -u https://example.com --enable-search --enable-advanced --config config.json
 ```
 
 ## 输出格式

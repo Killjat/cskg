@@ -1,0 +1,413 @@
+{
+  "url": "https://github.com",
+  "timestamp": "2026-01-19T17:35:32.098189+08:00",
+  "status": "success",
+  "certificate": {
+    "subject": {
+      "common_name": "github.com"
+    },
+    "issuer": {
+      "common_name": "Sectigo Public Server Authentication CA DV E36",
+      "organization": "Sectigo Limited",
+      "country": "GB"
+    },
+    "validity": {
+      "not_before": "2026-01-06T00:00:00Z",
+      "not_after": "2026-04-05T23:59:59Z",
+      "days_remaining": 76,
+      "is_expired": false,
+      "expires_soon": false
+    },
+    "san_domains": [
+      "github.com",
+      "www.github.com"
+    ],
+    "signature_algorithm": "ECDSA-SHA256",
+    "public_key": {
+      "algorithm": "ECDSA",
+      "size": 256
+    },
+    "serial_number": "2765689FEE52F85C4C8A47650E84BBE",
+    "fingerprint_sha1": "E3:B3:2D:AB:1E:68:5B:16:94:5D:14:99:82:4F:65:69:58:3A:9A:61",
+    "fingerprint_sha256": "54:1C:D0:29:8C:F1:F1:9A:AE:F4:38:6E:0F:C4:C1:3E:89:27:85:E7:1D:BA:51:33:B6:B9:82:0E:F6:1B:2C:E8",
+    "version": 3,
+    "extensions": [
+      {
+        "oid": "2.5.29.35",
+        "critical": false
+      },
+      {
+        "oid": "2.5.29.14",
+        "critical": false
+      },
+      {
+        "oid": "2.5.29.15",
+        "critical": true
+      },
+      {
+        "oid": "2.5.29.19",
+        "critical": true
+      },
+      {
+        "oid": "2.5.29.37",
+        "critical": false
+      },
+      {
+        "oid": "2.5.29.32",
+        "critical": false
+      },
+      {
+        "oid": "1.3.6.1.5.5.7.1.1",
+        "critical": false
+      },
+      {
+        "oid": "1.3.6.1.4.1.11129.2.4.2",
+        "critical": false
+      },
+      {
+        "oid": "2.5.29.17",
+        "critical": false
+      }
+    ],
+    "related_sites": {
+      "search_method": "crtsh",
+      "total_found": 3,
+      "search_time_ms": 9061,
+      "sites": [
+        {
+          "url": "https://vpn-ca.iad.github.com",
+          "domain": "vpn-ca.iad.github.com",
+          "port": 443,
+          "last_seen": "0001-01-01T00:00:00Z",
+          "confidence": 0.7,
+          "source": "crt.sh"
+        },
+        {
+          "url": "https://asset-generator.github.com",
+          "domain": "asset-generator.github.com",
+          "port": 443,
+          "last_seen": "0001-01-01T00:00:00Z",
+          "confidence": 0.7,
+          "source": "crt.sh"
+        },
+        {
+          "url": "https://bug-bash.github.com",
+          "domain": "bug-bash.github.com",
+          "port": 443,
+          "last_seen": "0001-01-01T00:00:00Z",
+          "confidence": 0.7,
+          "source": "crt.sh"
+        }
+      ],
+      "last_updated": "2026-01-19T17:35:32.326493+08:00"
+    }
+  },
+  "certificate_chain": [
+    {
+      "subject": {
+        "common_name": "github.com"
+      },
+      "issuer": {
+        "common_name": "Sectigo Public Server Authentication CA DV E36",
+        "organization": "Sectigo Limited",
+        "country": "GB"
+      },
+      "validity": {
+        "not_before": "2026-01-06T00:00:00Z",
+        "not_after": "2026-04-05T23:59:59Z",
+        "days_remaining": 76,
+        "is_expired": false,
+        "expires_soon": false
+      },
+      "san_domains": [
+        "github.com",
+        "www.github.com"
+      ],
+      "signature_algorithm": "ECDSA-SHA256",
+      "public_key": {
+        "algorithm": "ECDSA",
+        "size": 256
+      },
+      "serial_number": "2765689FEE52F85C4C8A47650E84BBE",
+      "fingerprint_sha1": "E3:B3:2D:AB:1E:68:5B:16:94:5D:14:99:82:4F:65:69:58:3A:9A:61",
+      "fingerprint_sha256": "54:1C:D0:29:8C:F1:F1:9A:AE:F4:38:6E:0F:C4:C1:3E:89:27:85:E7:1D:BA:51:33:B6:B9:82:0E:F6:1B:2C:E8",
+      "version": 3,
+      "extensions": [
+        {
+          "oid": "2.5.29.35",
+          "critical": false
+        },
+        {
+          "oid": "2.5.29.14",
+          "critical": false
+        },
+        {
+          "oid": "2.5.29.15",
+          "critical": true
+        },
+        {
+          "oid": "2.5.29.19",
+          "critical": true
+        },
+        {
+          "oid": "2.5.29.37",
+          "critical": false
+        },
+        {
+          "oid": "2.5.29.32",
+          "critical": false
+        },
+        {
+          "oid": "1.3.6.1.5.5.7.1.1",
+          "critical": false
+        },
+        {
+          "oid": "1.3.6.1.4.1.11129.2.4.2",
+          "critical": false
+        },
+        {
+          "oid": "2.5.29.17",
+          "critical": false
+        }
+      ],
+      "related_sites": {
+        "search_method": "crtsh",
+        "total_found": 3,
+        "search_time_ms": 688,
+        "sites": [
+          {
+            "url": "https://vpn-ca.iad.github.com",
+            "domain": "vpn-ca.iad.github.com",
+            "port": 443,
+            "last_seen": "0001-01-01T00:00:00Z",
+            "confidence": 0.7,
+            "source": "crt.sh"
+          },
+          {
+            "url": "https://asset-generator.github.com",
+            "domain": "asset-generator.github.com",
+            "port": 443,
+            "last_seen": "0001-01-01T00:00:00Z",
+            "confidence": 0.7,
+            "source": "crt.sh"
+          },
+          {
+            "url": "https://bug-bash.github.com",
+            "domain": "bug-bash.github.com",
+            "port": 443,
+            "last_seen": "0001-01-01T00:00:00Z",
+            "confidence": 0.7,
+            "source": "crt.sh"
+          }
+        ],
+        "last_updated": "2026-01-19T17:35:41.388059+08:00"
+      }
+    },
+    {
+      "subject": {
+        "common_name": "Sectigo Public Server Authentication CA DV E36",
+        "organization": "Sectigo Limited",
+        "country": "GB"
+      },
+      "issuer": {
+        "common_name": "Sectigo Public Server Authentication Root E46",
+        "organization": "Sectigo Limited",
+        "country": "GB"
+      },
+      "validity": {
+        "not_before": "2021-03-22T00:00:00Z",
+        "not_after": "2036-03-21T23:59:59Z",
+        "days_remaining": 3714,
+        "is_expired": false,
+        "expires_soon": false
+      },
+      "san_domains": null,
+      "signature_algorithm": "ECDSA-SHA384",
+      "public_key": {
+        "algorithm": "ECDSA",
+        "size": 256
+      },
+      "serial_number": "36E059ED888DD57AEDD570B6727F9BDA",
+      "fingerprint_sha1": "56:63:48:E6:56:E1:FA:6C:4E:2E:E6:72:59:16:E8:F4:E3:73:8A:07",
+      "fingerprint_sha256": "87:3F:0B:A8:0E:3A:C2:22:65:6D:FD:04:15:8C:C1:5C:29:27:D4:2D:5D:05:F0:1D:EE:4A:47:EB:43:A9:16:DF",
+      "version": 3,
+      "extensions": [
+        {
+          "oid": "2.5.29.35",
+          "critical": false
+        },
+        {
+          "oid": "2.5.29.14",
+          "critical": false
+        },
+        {
+          "oid": "2.5.29.15",
+          "critical": true
+        },
+        {
+          "oid": "2.5.29.19",
+          "critical": true
+        },
+        {
+          "oid": "2.5.29.37",
+          "critical": false
+        },
+        {
+          "oid": "2.5.29.32",
+          "critical": false
+        },
+        {
+          "oid": "2.5.29.31",
+          "critical": false
+        },
+        {
+          "oid": "1.3.6.1.5.5.7.1.1",
+          "critical": false
+        }
+      ],
+      "related_sites": {
+        "search_method": "crtsh",
+        "total_found": 1,
+        "search_time_ms": 5215,
+        "sites": [
+          {
+            "url": "https://Sectigo Public Server Authentication CA DV E36",
+            "domain": "Sectigo Public Server Authentication CA DV E36",
+            "port": 443,
+            "last_seen": "0001-01-01T00:00:00Z",
+            "confidence": 0.7,
+            "source": "crt.sh"
+          }
+        ],
+        "last_updated": "2026-01-19T17:35:42.076954+08:00"
+      }
+    },
+    {
+      "subject": {
+        "common_name": "Sectigo Public Server Authentication Root E46",
+        "organization": "Sectigo Limited",
+        "country": "GB"
+      },
+      "issuer": {
+        "common_name": "USERTrust ECC Certification Authority",
+        "organization": "The USERTRUST Network",
+        "country": "US"
+      },
+      "validity": {
+        "not_before": "2021-03-22T00:00:00Z",
+        "not_after": "2038-01-18T23:59:59Z",
+        "days_remaining": 4382,
+        "is_expired": false,
+        "expires_soon": false
+      },
+      "san_domains": null,
+      "signature_algorithm": "ECDSA-SHA384",
+      "public_key": {
+        "algorithm": "ECDSA",
+        "size": 384
+      },
+      "serial_number": "1A9EAFEC6DE8E19B5C193141B68D90DD",
+      "fingerprint_sha1": "3F:96:99:89:F5:31:0E:9C:05:0D:FF:D7:AB:C1:55:30:E3:C1:3A:A0",
+      "fingerprint_sha256": "EA:6B:89:ED:69:07:A2:09:FF:91:88:67:6F:B1:64:E7:AC:ED:89:4B:89:96:DF:BE:5C:E5:BB:CC:22:DE:4D:DD",
+      "version": 3,
+      "extensions": [
+        {
+          "oid": "2.5.29.35",
+          "critical": false
+        },
+        {
+          "oid": "2.5.29.14",
+          "critical": false
+        },
+        {
+          "oid": "2.5.29.15",
+          "critical": true
+        },
+        {
+          "oid": "2.5.29.19",
+          "critical": true
+        },
+        {
+          "oid": "2.5.29.37",
+          "critical": false
+        },
+        {
+          "oid": "2.5.29.32",
+          "critical": false
+        },
+        {
+          "oid": "2.5.29.31",
+          "critical": false
+        },
+        {
+          "oid": "1.3.6.1.5.5.7.1.1",
+          "critical": false
+        }
+      ],
+      "related_sites": {
+        "search_method": "crtsh",
+        "total_found": 1,
+        "search_time_ms": 536,
+        "sites": [
+          {
+            "url": "https://Sectigo Public Server Authentication Root E46",
+            "domain": "Sectigo Public Server Authentication Root E46",
+            "port": 443,
+            "last_seen": "0001-01-01T00:00:00Z",
+            "confidence": 0.7,
+            "source": "crt.sh"
+          }
+        ],
+        "last_updated": "2026-01-19T17:35:47.292476+08:00"
+      }
+    }
+  ],
+  "security_analysis": {
+    "is_expired": false,
+    "expires_soon": false,
+    "is_self_signed": false,
+    "weak_signature": false,
+    "certificate_chain_valid": true,
+    "security_score": 100
+  },
+  "advanced_analysis": {
+    "threat_intelligence": {
+      "is_malicious": false
+    },
+    "phishing_analysis": {
+      "is_phishing": false,
+      "similarity_score": 0
+    },
+    "dga_analysis": {
+      "is_dga": false,
+      "dga_score": 0,
+      "entropy_score": 3.321928094887362
+    },
+    "timeline_analysis": {
+      "issuance_pattern": "",
+      "validity_pattern": "long",
+      "time_anomalies": [
+        {
+          "type": "long_validity",
+          "description": "Certificate validity period exceeds recommended maximum: 89 days",
+          "timestamp": "2026-01-06T00:00:00Z",
+          "severity": "low"
+        }
+      ]
+    },
+    "anomaly_detection": {
+      "anomaly_score": 0,
+      "baseline_deviation": 0
+    },
+    "risk_score": 2,
+    "risk_factors": [],
+    "recommendations": []
+  },
+  "connection_info": {
+    "tls_version": "TLS 1.3",
+    "cipher_suite": "TLS_AES_128_GCM_SHA256",
+    "server_name": "github.com",
+    "peer_certificates_count": 3,
+    "connect_time_ms": 228
+  }
+}

@@ -19,8 +19,9 @@ import (
 
 // CertificateAnalyzer 证书分析器
 type CertificateAnalyzer struct {
-	config   *Config
-	searcher *CertificateSearcher
+	config           *Config
+	searcher         *CertificateSearcher
+	advancedAnalyzer *AdvancedAnalyzer
 }
 
 // NewCertificateAnalyzer 创建新的证书分析器
@@ -32,6 +33,11 @@ func NewCertificateAnalyzer(config *Config) *CertificateAnalyzer {
 	// 如果配置了搜索功能，创建搜索器
 	if config.SearchConfig != nil && config.SearchConfig.EnableSearch {
 		analyzer.searcher = NewCertificateSearcher(config.SearchConfig)
+	}
+	
+	// 如果配置了高级分析功能，创建高级分析器
+	if config.AdvancedConfig != nil {
+		analyzer.advancedAnalyzer = NewAdvancedAnalyzer(config.AdvancedConfig)
 	}
 	
 	return analyzer
@@ -123,6 +129,11 @@ func (ca *CertificateAnalyzer) AnalyzeURL(targetURL string) *CertificateResult {
 
 	// 安全分析
 	result.SecurityAnalysis = ca.performSecurityAnalysis(cert, state.PeerCertificates)
+
+	// 高级安全分析
+	if ca.advancedAnalyzer != nil {
+		result.AdvancedAnalysis = ca.advancedAnalyzer.AnalyzeCertificate(cert, result.Certificate.RelatedSites)
+	}
 
 	return result
 }
