@@ -85,6 +85,29 @@ curl -X POST \
 
 ---
 
+## 🔒 安全配置
+
+本项目包含需要API密钥的组件（如FOFA集成），请注意保护敏感信息：
+
+### 配置FOFA凭据
+```bash
+# 复制示例配置文件
+cp fofa_config.json.example fofa_config.json
+
+# 编辑配置文件，填入真实凭据
+{
+  "email": "your_fofa_email@example.com",
+  "key": "your_fofa_api_key_here"
+}
+```
+
+### 安全注意事项
+- ✅ 所有敏感配置文件已被 `.gitignore` 保护
+- ✅ 只提交示例配置文件到git仓库
+- ⚠️ 永远不要提交包含真实凭据的文件
+
+**详细安全配置指南**: [SECURITY_CONFIG.md](SECURITY_CONFIG.md)
+
 ## 🚀 快速开始
 
 ### 环境要求
