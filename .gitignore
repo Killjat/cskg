@@ -5,104 +5,14 @@
 **/fofa_credentials.json
 **/fofa.json
 
-# FOFA 测试结果文件 - 可能包含敏感的目标信息
-**/fofa_test_result_*.json
-**/fofa_api_test_result_*.json
-**/fofa_scan_*.json
-
-# 其他敏感配置文件
-**/config/credentials.json
-**/config/api_keys.json
-**/secrets.json
-**/private_config.json
-
-# 数据库文件
-**/*.db
-**/*.sqlite
-**/*.sqlite3
-**/data/*.db
-
-# 日志文件
-**/logs/*.log
-**/*.log
-**/scan_*.log
-**/test_*.log
-
-# 临时文件和缓存
-**/tmp/
-**/temp/
-**/.cache/
-**/cache/
-
-# 编译产物
-**/api-hunter
-**/network_probe
-**/ip-discovery
-**/fofa-api-test/fofa-api-test
-**/*.exe
-**/*.bin
-
-# Go 相关
-**/go.sum
-**/.go-mod-cache/
-**/vendor/
-
-# 系统文件
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# IDE 文件
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# 测试输出文件
-**/exports/*.json
-**/exports/*.csv
-**/exports/*.html
-**/exports/*.md
-**/results/
-**/output/
-
-# 备份文件
-*.bak
-*.backup
-*.old
-
-# 压缩文件
-*.tar.gz
-*.zip
-*.rar
-
-# 环境变量文件
-.env
-.env.local
-.env.production
-.env.test
-
-# 特定项目的敏感文件
+# 特定项目的FOFA配置文件
 network_probe/fofa_config.json
 fofa-api-test/fofa_config.json
 api-hunter/fofa_config.json
+cert-analyzer/config.json
 
 # FOFA 相关的所有配置文件（递归匹配）
 **/fofa*config*
 **/FOFA*config*
 **/fofa*credential*
 **/FOFA*credential*
-# SSL证书分析工具
-cert-analyzer/cert-analyzer
-cert-analyzer/bin/
-cert-analyzer/config.json
-cert-analyzer/test-*.json
-cert-analyzer/test-*.csv
-cert-analyzer/results.json
-cert-analyzer/results.csv
-cert-analyzer/batch-results.json
