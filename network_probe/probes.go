@@ -205,15 +205,15 @@ func (pl *ProbeLoader) LoadBuiltinProbes() map[string]*Probe {
 			Rarity:      4,
 		},
 		
-		// HTTPS/TLS探测
+		// 优化的HTTPS/TLS探测
 		{
 			Name:        "TLSClientHello",
 			Type:        ProbeTypeTCP,
-			Payload:     generateTLSClientHello(),
-			PayloadHex:  hex.EncodeToString(generateTLSClientHello()),
+			Payload:     generateOptimizedTLSClientHello(),
+			PayloadHex:  hex.EncodeToString(generateOptimizedTLSClientHello()),
 			Ports:       []int{443, 8443, 993, 995, 465, 587, 636, 989, 990, 992, 5061},
 			Protocol:    "tls",
-			Description: "TLS Client Hello handshake",
+			Description: "Optimized TLS Client Hello handshake",
 			Timeout:     10,
 			Rarity:      2,
 		},
@@ -401,28 +401,28 @@ func (pl *ProbeLoader) LoadBuiltinProbes() map[string]*Probe {
 		},
 		
 		// 数据库协议探测
-		// SQL Server探测
+		// 优化的SQL Server探测
 		{
-			Name:        "SQLServerLogin",
+			Name:        "SQLServerPreLogin",
 			Type:        ProbeTypeTCP,
-			Payload:     generateSQLServerLoginPacket(),
-			PayloadHex:  hex.EncodeToString(generateSQLServerLoginPacket()),
+			Payload:     generateOptimizedSQLServerTDS(),
+			PayloadHex:  hex.EncodeToString(generateOptimizedSQLServerTDS()),
 			Ports:       []int{1433, 1434},
 			Protocol:    "sqlserver",
-			Description: "Microsoft SQL Server login probe",
+			Description: "Optimized Microsoft SQL Server TDS pre-login",
 			Timeout:     10,
 			Rarity:      4,
 		},
 		
-		// Oracle探测
+		// 优化的Oracle探测
 		{
 			Name:        "OracleConnect",
 			Type:        ProbeTypeTCP,
-			Payload:     generateOracleConnectPacket(),
-			PayloadHex:  hex.EncodeToString(generateOracleConnectPacket()),
+			Payload:     generateOptimizedOracleTNSConnect("localhost"),
+			PayloadHex:  hex.EncodeToString(generateOptimizedOracleTNSConnect("localhost")),
 			Ports:       []int{1521, 1522},
 			Protocol:    "oracle",
-			Description: "Oracle Database TNS connect",
+			Description: "Optimized Oracle Database TNS connect",
 			Timeout:     10,
 			Rarity:      4,
 		},
