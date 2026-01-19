@@ -1,0 +1,157 @@
+# API Hunter 配置文件
+
+# 爬虫配置
+crawler:
+  max_workers: 10          # 最大并发数
+  delay: 1s               # 请求间隔
+  timeout: 30s            # 请求超时
+  max_depth: 5            # 最大爬取深度
+  max_pages: 1000         # 最大页面数
+  use_headless: false     # 是否使用无头浏览器
+  
+  # User-Agent列表
+  user_agents:
+    - "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    - "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    - "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+  
+  # 域名过滤
+  allowed_domains: []     # 允许的域名列表，空表示不限制
+  blocked_domains:        # 禁止的域名列表
+    - "google.com"
+    - "facebook.com"
+    - "twitter.com"
+  
+  # 路径过滤
+  blocked_paths:          # 禁止的路径列表
+    - "/logout"
+    - "/admin"
+    - "/private"
+    - ".pdf"
+    - ".jpg"
+    - ".png"
+    - ".gif"
+    - ".css"
+    - ".ico"
+
+# 数据库配置
+database:
+  type: "sqlite"          # 数据库类型: sqlite, mysql, postgres
+  host: "localhost"
+  port: 3306
+  username: ""
+  password: ""
+  database: "api_hunter.db"
+  
+  # SQLite配置
+  sqlite_path: "./data/api_hunter.db"
+  
+  # 连接池配置
+  max_open_conns: 25
+  max_idle_conns: 5
+  conn_max_lifetime: "1h"
+
+# Web界面配置
+web:
+  port: 8080
+  host: "0.0.0.0"
+  static_dir: "./web/static"
+  template_dir: "./web/templates"
+  
+  # 认证配置
+  auth:
+    enabled: false
+    username: "admin"
+    password: "admin123"
+  
+  # CORS配置
+  cors:
+    enabled: true
+    origins: ["*"]
+    methods: ["GET", "POST", "PUT", "DELETE"]
+    headers: ["*"]
+
+# 导出配置
+export:
+  default_format: "json"  # 默认导出格式: json, csv, markdown, html
+  output_dir: "./exports"
+  include_details: true   # 是否包含详细信息
+
+# 日志配置
+logging:
+  level: "info"          # 日志级别: debug, info, warn, error
+  file: "./logs/api_hunter.log"
+  max_size: 100          # 日志文件最大大小(MB)
+  max_backups: 5         # 保留的日志文件数量
+
+# API模式匹配规则
+patterns:
+  # REST API模式
+  rest_patterns:
+    - name: "标准REST API"
+      pattern: "^/api/v[0-9]+/[a-zA-Z]+(/[0-9]+)?$"
+      description: "匹配标准的REST API路径"
+    
+    - name: "GraphQL端点"
+      pattern: "^/graphql$"
+      description: "GraphQL查询端点"
+    
+    - name: "JSON API"
+      pattern: "\\.json$"
+      description: "JSON格式的API端点"
+  
+  # JavaScript API调用模式
+  js_patterns:
+    - name: "Fetch API"
+      pattern: "fetch\\s*\\(\\s*[\"'`]([^\"'`]+)[\"'`]"
+      description: "Fetch API调用"
+    
+    - name: "Axios调用"
+      pattern: "axios\\.[a-z]+\\s*\\(\\s*[\"'`]([^\"'`]+)[\"'`]"
+      description: "Axios HTTP客户端调用"
+    
+    - name: "jQuery AJAX"
+      pattern: "\\$\\.ajax\\s*\\(|\\$\\.[a-z]+\\s*\\("
+      description: "jQuery AJAX调用"
+
+# 分析器配置
+analyzer:
+  # JavaScript分析配置
+  javascript:
+    enabled: true
+    max_file_size: 5242880  # 最大文件大小 5MB
+    timeout: 30s
+    
+    # 要分析的文件扩展名
+    extensions:
+      - ".js"
+      - ".jsx"
+      - ".ts"
+      - ".tsx"
+      - ".vue"
+  
+  # 网络流量分析
+  network:
+    enabled: true
+    capture_responses: true
+    max_response_size: 1048576  # 最大响应大小 1MB
+
+# 高级配置
+advanced:
+  # 代理配置
+  proxy:
+    enabled: false
+    http_proxy: ""
+    https_proxy: ""
+  
+  # 缓存配置
+  cache:
+    enabled: true
+    ttl: "1h"
+    max_size: 1000
+  
+  # 限流配置
+  rate_limit:
+    enabled: true
+    requests_per_second: 10
+    burst: 20

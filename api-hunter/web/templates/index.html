@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.title}}</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <header class="header">
+            <h1>🔍 API Hunter</h1>
+            <p>专业的网页API接口发现工具</p>
+        </header>
+
+        <!-- 导航栏 -->
+        <nav class="nav">
+            <ul>
+                <li><a href="#dashboard" class="nav-link active" data-tab="dashboard">仪表板</a></li>
+                <li><a href="#sessions" class="nav-link" data-tab="sessions">会话管理</a></li>
+                <li><a href="#apis" class="nav-link" data-tab="apis">API列表</a></li>
+                <li><a href="#pages" class="nav-link" data-tab="pages">页面列表</a></li>
+                <li><a href="#jsfiles" class="nav-link" data-tab="jsfiles">JS文件</a></li>
+            </ul>
+        </nav>
+
+        <!-- 会话选择器 -->
+        <div class="card">
+            <div class="form-group">
+                <label for="sessionSelect" class="form-label">选择会话:</label>
+                <select id="sessionSelect" class="form-control">
+                    <option value="">加载中...</option>
+                </select>
+            </div>
+            <div style="margin-top: 1rem;">
+                <button class="btn btn-primary refresh-btn">🔄 刷新</button>
+                <button id="analyzeJSBtn" class="btn btn-secondary">🔍 分析JS文件</button>
+                <button class="btn btn-secondary export-btn" data-format="json">📄 导出JSON</button>
+                <button class="btn btn-secondary export-btn" data-format="csv">📊 导出CSV</button>
+                <button class="btn btn-secondary export-btn" data-format="html">🌐 导出HTML</button>
+            </div>
+        </div>
+
+        <!-- 仪表板标签页 -->
+        <div id="dashboard" class="tab-content active">
+            <div class="card">
+                <div class="card-title">📊 统计概览</div>
+                <div id="statsContainer">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📈</div>
+                        <div class="empty-state-text">请选择会话查看统计信息</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🔍 最新发现的API</div>
+                <div id="recentAPIsContainer">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔗</div>
+                        <div class="empty-state-text">请选择会话查看API列表</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 会话管理标签页 -->
+        <div id="sessions" class="tab-content">
+            <div class="card">
+                <div class="card-title">📋 扫描会话</div>
+                <div id="sessionsList">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API列表标签页 -->
+        <div id="apis" class="tab-content">
+            <div class="card">
+                <div class="card-title">🔗 API端点列表</div>
+                
+                <!-- 搜索框 -->
+                <div class="search-box">
+                    <input type="text" id="searchInput" class="search-input" placeholder="搜索API端点...">
+                    <span class="search-icon">🔍</span>
+                </div>
+
+                <div id="apisContainer">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔗</div>
+                        <div class="empty-state-text">请选择会话查看API列表</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 页面列表标签页 -->
+        <div id="pages" class="tab-content">
+            <div class="card">
+                <div class="card-title">📄 已爬取页面</div>
+                <div id="pagesContainer">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📄</div>
+                        <div class="empty-state-text">请选择会话查看页面列表</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- JS文件标签页 -->
+        <div id="jsfiles" class="tab-content">
+            <div class="card">
+                <div class="card-title">📜 JavaScript文件</div>
+                <div id="jsFilesContainer">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📜</div>
+                        <div class="empty-state-text">请选择会话查看JavaScript文件</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+    <script>
+        // 标签页切换功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // 移除所有活动状态
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    tabContents.forEach(t => t.classList.remove('active'));
+                    
+                    // 添加活动状态
+                    this.classList.add('active');
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+        });
+    </script>
+
+    <style>
+        /* 标签页样式 */
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .nav-link.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        /* 响应式表格 */
+        @media (max-width: 768px) {
+            .table-container {
+                overflow-x: auto;
+            }
+            
+            table {
+                min-width: 600px;
+            }
+        }
+        
+        /* 加载状态 */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        
+        /* 消息样式 */
+        .message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 5px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .message-success {
+            background: #28a745;
+        }
+        
+        .message-error {
+            background: #dc3545;
+        }
+        
+        .message-info {
+            background: #17a2b8;
+        }
+    </style>
+</body>
+</html>

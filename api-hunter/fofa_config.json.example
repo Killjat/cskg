@@ -1,0 +1,5 @@
+{
+  "email": "your_email@example.com", 
+  "key": "your_fofa_api_key_here",
+  "base_url": "https://fofa.info/api/v1/search/all"
+}
