@@ -1,0 +1,17 @@
+URL,Status,Common Name,Issuer,Not Before,Not After,Days Remaining,Is Expired,Expires Soon,Self Signed,Weak Signature,Security Score,TLS Version,Cipher Suite
+https://www.github.com,success,github.com,Sectigo Public Server Authentication CA DV E36,2026-01-06T00:00:00Z,2026-04-05T23:59:59Z,76,false,false,false,false,100,TLS 1.3,TLS_AES_128_GCM_SHA256
+https://www.stackoverflow.com,success,www.stackoverflow.com,E7,2025-11-23T14:18:39Z,2026-02-21T14:18:38Z,33,false,false,false,false,100,TLS 1.3,TLS_AES_128_GCM_SHA256
+https://www.cloudflare.com,success,www.cloudflare.com,WE1,2026-01-03T22:57:45Z,2026-04-03T23:57:41Z,74,false,false,false,false,100,TLS 1.3,TLS_AES_128_GCM_SHA256
+https://www.chase.com,success,www.chase.com,DigiCert EV RSA CA G2,2025-03-07T00:00:00Z,2026-03-06T23:59:59Z,46,false,false,false,false,100,TLS 1.3,TLS_AES_256_GCM_SHA384
+https://www.bankofamerica.com,success,www.bankofamerica.com,DigiCert EV RSA CA G2,2025-08-13T00:00:00Z,2026-09-13T23:59:59Z,237,false,false,false,false,100,TLS 1.3,TLS_AES_256_GCM_SHA384
+https://www.amazon.com,success,www.amazon.com,DigiCert Global CA G2,2025-10-31T00:00:00Z,2026-10-16T23:59:59Z,270,false,false,false,false,100,TLS 1.3,TLS_AES_128_GCM_SHA256
+https://www.ebay.com,success,www.ebay.com,Sectigo Public Server Authentication CA OV R36,2025-07-17T00:00:00Z,2026-07-17T23:59:59Z,179,false,false,false,false,100,TLS 1.3,TLS_AES_128_GCM_SHA256
+https://www.google.com,error,,,,,,,,,,,,
+https://www.facebook.com,error,,,,,,,,,,,,
+https://www.microsoft.com,success,www.microsoft.com,Microsoft Azure RSA TLS Issuing CA 04,2025-07-21T18:25:48Z,2026-07-16T18:25:48Z,178,false,false,false,false,100,TLS 1.3,TLS_AES_256_GCM_SHA384
+https://www.apple.com,success,www.apple.com,Apple Public EV Server RSA CA 1 - G1,2025-09-11T18:37:53Z,2026-03-18T19:05:15Z,58,false,false,false,false,100,TLS 1.3,TLS_AES_256_GCM_SHA384
+https://www.netflix.com,success,www.netflix.com,DigiCert Secure Site ECC CA-1,2025-09-02T00:00:00Z,2026-09-04T09:49:22Z,228,false,false,false,false,100,TLS 1.3,TLS_AES_128_GCM_SHA256
+https://badssl.com:443,success,*.badssl.com,R13,2025-11-18T20:02:47Z,2026-02-16T20:02:46Z,28,false,true,false,false,80,TLS 1.2,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+https://expired.badssl.com,error,,,,,,,,,,,,
+https://self-signed.badssl.com,error,,,,,,,,,,,,
+https://www.twitter.com,error,,,,,,,,,,,,

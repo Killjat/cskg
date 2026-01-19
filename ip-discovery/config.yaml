@@ -1,0 +1,36 @@
+# IP发现系统配置文件
+
+# InfluxDB配置
+influxdb:
+  url: "http://localhost:8086"
+  token: "your-influxdb-token"
+  organization: "your-org"
+  # IP段信息存储bucket
+  segments_bucket: "taiwan_ip_segments"
+  # 探活结果存储bucket
+  alive_bucket: "taiwan_ip_alive"
+
+# APNIC数据源配置
+apnic:
+  # APNIC委托文件URL
+  delegated_url: "https://ftp.apnic.net/stats/apnic/delegated-apnic-latest"
+  # 本地缓存文件路径
+  cache_file: "./data/delegated-apnic-latest"
+  # 缓存有效期（小时）
+  cache_hours: 24
+
+# 扫描配置
+scanner:
+  # 并发扫描协程数
+  workers: 100
+  # ping超时时间（毫秒）
+  ping_timeout: 1000
+  # 每个C段扫描的IP数量（1-254）
+  ips_per_segment: 10
+  # 扫描间隔（毫秒）
+  scan_interval: 10
+
+# 日志配置
+logging:
+  level: "info"
+  file: "./logs/scanner.log"

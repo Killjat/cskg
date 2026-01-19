@@ -1,0 +1,4 @@
+Failed to start server [Errno 48] error while attempting to bind on address ('0.0.0.0', 502): [errno 48] address already in use
+Using pymodbus version: 3.11.4
+Starting Modbus TCP Server on 0.0.0.0:502...
+Error: Could not start listen, please check address.
