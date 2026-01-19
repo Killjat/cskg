@@ -1,0 +1,33 @@
+# 网站信息收集测试URL列表
+# 一行一个URL，支持注释
+
+# 政府网站
+https://www.gov.cn
+https://www.beijing.gov.cn
+https://www.shanghai.gov.cn
+
+# 知名企业网站
+https://www.baidu.com
+https://www.tencent.com
+https://www.alibaba.com
+https://www.jd.com
+
+# 教育机构
+https://www.tsinghua.edu.cn
+https://www.pku.edu.cn
+https://www.fudan.edu.cn
+
+# 新闻媒体
+https://www.xinhuanet.com
+https://www.people.com.cn
+https://www.chinanews.com
+
+# 技术公司
+https://www.huawei.com
+https://www.xiaomi.com
+https://www.bytedance.com
+
+# 银行金融
+https://www.icbc.com.cn
+https://www.ccb.com
+https://www.boc.cn

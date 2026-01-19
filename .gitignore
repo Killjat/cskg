@@ -16,3 +16,12 @@ cert-analyzer/config.json
 !**/fofa*config*.json.example
 **/FOFA*config*.json
 !**/FOFA*config*.json.example
+
+# 网站信息收集工具
+web-info-collector/web-info-collector
+web-info-collector/bin/
+web-info-collector/test-*.json
+web-info-collector/test-*.csv
+web-info-collector/test-*.html
+web-info-collector/results.*
+web-info-collector/report.*
