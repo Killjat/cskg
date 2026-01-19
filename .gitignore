@@ -97,3 +97,12 @@ api-hunter/fofa_config.json
 **/FOFA*config*
 **/fofa*credential*
 **/FOFA*credential*
+# SSL证书分析工具
+cert-analyzer/cert-analyzer
+cert-analyzer/bin/
+cert-analyzer/config.json
+cert-analyzer/test-*.json
+cert-analyzer/test-*.csv
+cert-analyzer/results.json
+cert-analyzer/results.csv
+cert-analyzer/batch-results.json

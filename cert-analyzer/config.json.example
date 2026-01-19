@@ -1,0 +1,16 @@
+{
+  "fofa": {
+    "email": "your-email@example.com",
+    "key": "your-fofa-api-key-here",
+    "enabled": true
+  },
+  "shodan": {
+    "api_key": "your-shodan-api-key-here",
+    "enabled": false
+  },
+  "censys": {
+    "app_id": "your-censys-app-id",
+    "secret": "your-censys-secret",
+    "enabled": false
+  }
+}
