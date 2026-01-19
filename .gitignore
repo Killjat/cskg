@@ -11,8 +11,8 @@ fofa-api-test/fofa_config.json
 api-hunter/fofa_config.json
 cert-analyzer/config.json
 
-# FOFA 相关的所有配置文件（递归匹配）
-**/fofa*config*
-**/FOFA*config*
-**/fofa*credential*
-**/FOFA*credential*
+# FOFA 相关的配置文件（但保留example文件）
+**/fofa*config*.json
+!**/fofa*config*.json.example
+**/FOFA*config*.json
+!**/FOFA*config*.json.example
