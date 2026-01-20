@@ -1,0 +1,38 @@
+# 任务管理节点配置文件
+
+# 节点配置
+node:
+  id: "task-manager-001"
+  name: "任务管理节点1"
+  region: "default"
+
+# Kafka配置
+kafka:
+  brokers: ["localhost:9092"]
+  system_task_topic: "system_tasks"
+  regular_task_topic: "regular_tasks"
+  result_topic: "scan_results"
+  group_id: "task_managers"
+
+# Web配置
+web:
+  host: "0.0.0.0"
+  port: 8080
+  tls:
+    enabled: false
+
+# 存储配置
+storage:
+  mongodb:
+    uri: "mongodb://cyberstroll:cyberstroll123@localhost:27017/cyberstroll?authSource=admin"
+    database: "cyberstroll"
+    timeout: 10
+
+# 日志配置
+logging:
+  level: "debug"
+  file: "logs/task_manager.log"
+  max_size: "100MB"
+  max_backups: 10
+  max_age: 30
+  compress: true

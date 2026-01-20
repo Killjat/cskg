@@ -1,0 +1,138 @@
+# CyberStroll Docker本地部署配置文件
+# 适用于Docker Compose环境
+
+# 任务管理节点配置
+task_manager:
+  web:
+    host: "0.0.0.0"
+    port: 8080
+    static_dir: "web/static"
+    template_dir: "web/templates"
+  
+  mongodb:
+    uri: "mongodb://cyberstroll:cyberstroll123@localhost:27017/cyberstroll?authSource=admin"
+    database: "cyberstroll"
+    timeout: 10
+  
+  kafka:
+    brokers: ["localhost:9092"]
+    system_topic: "system_tasks"
+    regular_topic: "regular_tasks"
+    batch_size: 100
+    timeout: 10
+  
+  task:
+    max_ips_per_task: 3000
+    default_timeout: 300
+    system_task_interval: 60
+
+# 扫描节点配置
+scan_node:
+  node:
+    id: "scan-node-001"
+    name: "扫描节点1"
+    region: "docker-local"
+  
+  scanner:
+    max_concurrency: 100
+    timeout: 10
+    retry_count: 3
+    batch_size: 50
+  
+  kafka:
+    brokers: ["localhost:9092"]
+    system_topic: "system_tasks"
+    regular_topic: "regular_tasks"
+    result_topic: "scan_results"
+    consumer_group: "scan_nodes"
+    batch_size: 100
+    timeout: 10
+
+# 处理节点配置
+processor_node:
+  node:
+    id: "processor-node-001"
+    name: "处理节点1"
+    region: "docker-local"
+  
+  kafka:
+    brokers: ["localhost:9092"]
+    result_topic: "scan_results"
+    consumer_group: "processors"
+    batch_size: 100
+    timeout: 10
+  
+  elasticsearch:
+    urls: ["http://localhost:9200"]
+    index: "cyberstroll_ip_scan"
+    username: ""
+    password: ""
+    timeout: 30
+    batch_size: 100
+  
+  mongodb:
+    uri: "mongodb://cyberstroll:cyberstroll123@localhost:27017/cyberstroll?authSource=admin"
+    database: "cyberstroll"
+    timeout: 10
+
+# 搜索节点配置
+search_node:
+  web:
+    host: "0.0.0.0"
+    port: 8082
+    static_dir: "web/static"
+    template_dir: "web/templates"
+  
+  elasticsearch:
+    urls: ["http://localhost:9200"]
+    index: "cyberstroll_ip_scan"
+    username: ""
+    password: ""
+    timeout: 30
+  
+  search:
+    max_results: 10000
+    default_size: 20
+    max_size: 100
+
+# 富化节点配置
+enrichment_node:
+  node:
+    id: "enrichment-node-001"
+    name: "网站数据富化节点1"
+    region: "docker-local"
+  
+  elasticsearch:
+    urls: ["http://localhost:9200"]
+    index: "cyberstroll_ip_scan"
+    username: ""
+    password: ""
+    timeout: 30
+  
+  enrichment:
+    batch_size: 50
+    worker_count: 5
+    scan_interval: "5m"
+    request_timeout: "30s"
+    max_retries: 3
+    
+    # 功能开关
+    enable_cert: true
+    enable_api: true
+    enable_web_info: true
+    enable_fingerprint: true
+    enable_content: true
+
+# 日志配置
+logging:
+  level: "info"
+  format: "json"
+  output: "stdout"
+  file: "logs/cyberstroll.log"
+
+# Redis配置 (可选)
+redis:
+  addr: "localhost:6379"
+  password: "cyberstroll123"
+  db: 0
+  pool_size: 10

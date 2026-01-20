@@ -1,0 +1,4 @@
+URL,状态码,服务器,技术,错误,时间戳
+http://localhost:5001/,200,Werkzeug/3.1.4 Python/3.14.2,Werkzeug (web_server); Flask (web_framework); Python (programming_language),,2026-01-11 20:59:00
+http://example.com,200,cloudflare,Cloudflare (waf),,2026-01-11 20:59:00
+https://github.com,0,,,"HTTPSConnectionPool(host='github.com', port=443): Read timed out. (read timeout=None)",2026-01-11 20:59:00

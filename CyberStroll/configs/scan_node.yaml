@@ -1,0 +1,42 @@
+# 扫描节点配置文件
+
+# 节点配置
+node:
+  id: "scan-node-001"
+  name: "扫描节点1"
+  region: "default"
+
+# Kafka配置
+kafka:
+  brokers: ["localhost:9092"]
+  system_task_topic: "system_tasks"
+  regular_task_topic: "regular_tasks"
+  result_topic: "scan_results"
+  group_id: "cyberstroll_scan_group"
+  auto_offset_reset: "latest"
+  session_timeout: 30000
+  heartbeat_interval: 3000
+
+# 扫描器配置
+scanner:
+  max_concurrency: 20
+  timeout: "3s"
+  retry_count: 2
+  probe_delay: "100ms"
+  enable_logging: true
+
+# 存储配置
+storage:
+  mongodb:
+    uri: "mongodb://cyberstroll:cyberstroll123@localhost:27017/cyberstroll?authSource=admin"
+    database: "cyberstroll"
+    timeout: 10
+
+# 日志配置
+logging:
+  level: "debug"
+  file: "logs/scan_node.log"
+  max_size: "100MB"
+  max_backups: 10
+  max_age: 30
+  compress: true

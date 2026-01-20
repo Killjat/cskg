@@ -1,0 +1,124 @@
+# 服务指纹数据库
+# 参考Nmap的服务指纹识别规则
+
+fingerprints:
+  # Web服务器
+  - name: "Apache"
+    category: "web_server"
+    matches:
+      - type: "header"
+        key: "Server"
+        value: "Apache"
+      - type: "header"
+        key: "X-Powered-By"
+        value: "Apache"
+      - type: "html"
+        pattern: "Apache/"
+
+  - name: "Nginx"
+    category: "web_server"
+    matches:
+      - type: "header"
+        key: "Server"
+        value: "nginx"
+      - type: "header"
+        key: "X-Powered-By"
+        value: "nginx"
+      - type: "html"
+        pattern: "nginx/"
+
+  - name: "Microsoft IIS"
+    category: "web_server"
+    matches:
+      - type: "header"
+        key: "Server"
+        value: "Microsoft-IIS"
+      - type: "header"
+        key: "X-Powered-By"
+        value: "ASP.NET"
+
+  - name: "Lighttpd"
+    category: "web_server"
+    matches:
+      - type: "header"
+        key: "Server"
+        value: "lighttpd"
+
+  - name: "Caddy"
+    category: "web_server"
+    matches:
+      - type: "header"
+        key: "Server"
+        value: "Caddy"
+
+  - name: "Werkzeug"
+    category: "web_server"
+    matches:
+      - type: "header"
+        key: "Server"
+        value: "Werkzeug"
+
+  # Web框架
+  - name: "Express"
+    category: "web_framework"
+    matches:
+      - type: "header"
+        key: "X-Powered-By"
+        value: "Express"
+
+  - name: "Django"
+    category: "web_framework"
+    matches:
+      - type: "header"
+        key: "X-Powered-By"
+        value: "Django"
+      - type: "html"
+        pattern: "<input.*csrfmiddlewaretoken"
+
+  - name: "Flask"
+    category: "web_framework"
+    matches:
+      - type: "header"
+        key: "Server"
+        value: "Werkzeug"
+      - type: "html"
+        pattern: "flask"
+
+  - name: "PHP"
+    category: "programming_language"
+    matches:
+      - type: "header"
+        key: "X-Powered-By"
+        value: "PHP"
+
+  - name: "Node.js"
+    category: "programming_language"
+    matches:
+      - type: "header"
+        key: "X-Powered-By"
+        value: "Node.js"
+
+  - name: "Python"
+    category: "programming_language"
+    matches:
+      - type: "header"
+        key: "Server"
+        value: "Python"
+
+  - name: "WordPress"
+    category: "cms"
+    matches:
+      - type: "html"
+        pattern: "wp-content"
+      - type: "html"
+        pattern: "wordpress"
+
+  - name: "Cloudflare"
+    category: "waf"
+    matches:
+      - type: "header"
+        key: "Server"
+        value: "cloudflare"
+      - type: "header"
+        key: "CF-RAY"
+        value: ""

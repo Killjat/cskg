@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="logo"><a href="/">CyberStroll</a></h1>
+            <p class="subtitle">搜索结果</p>
+        </header>
+
+        <main class="main">
+            <div class="search-box">
+                <form action="/search" method="GET" class="search-form">
+                    <div class="search-row">
+                        <input type="text" name="ip" value="{{.Request.IP}}" placeholder="IP地址" class="search-input">
+                        <input type="text" name="port" value="{{.Request.Port}}" placeholder="端口" class="search-input">
+                    </div>
+                    <div class="search-row">
+                        <input type="text" name="banner" value="{{.Request.Banner}}" placeholder="Banner关键词" class="search-input">
+                        <input type="text" name="service" value="{{.Request.Service}}" placeholder="服务类型" class="search-input">
+                    </div>
+                    <div class="search-row">
+                        <input type="text" name="country" value="{{.Request.Country}}" placeholder="国家/地区" class="search-input">
+                        <button type="submit" class="search-button">搜索</button>
+                    </div>
+                </form>
+            </div>
+
+            {{if .Response}}
+            <div class="results-section">
+                <div class="results-header">
+                    <h2>搜索结果 (共 {{.Response.Total}} 条)</h2>
+                    <div class="pagination-info">
+                        第 {{.Response.Page}} 页，每页 {{.Response.Size}} 条
+                    </div>
+                </div>
+
+                {{if .Response.Results}}
+                <div class="results-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>IP地址</th>
+                                <th>端口</th>
+                                <th>协议</th>
+                                <th>服务</th>
+                                <th>版本</th>
+                                <th>Banner</th>
+                                <th>国家</th>
+                                <th>扫描时间</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{range .Response.Results}}
+                            <tr>
+                                <td><a href="/asset/{{.IP}}">{{.IP}}</a></td>
+                                <td>{{.Port}}</td>
+                                <td>{{.Protocol}}</td>
+                                <td>{{.Service}}</td>
+                                <td>{{.ServiceVersion}}</td>
+                                <td class="banner-cell" title="{{.Banner}}">{{.Banner}}</td>
+                                <td>{{if .GeoInfo}}{{.GeoInfo.Country}}{{else}}-{{end}}</td>
+                                <td>{{.ScanTime.Format "01-02 15:04"}}</td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 分页 -->
+                <div class="pagination">
+                    {{if gt .Response.Page 1}}
+                    <a href="?ip={{.Request.IP}}&port={{.Request.Port}}&banner={{.Request.Banner}}&service={{.Request.Service}}&country={{.Request.Country}}&page={{sub .Response.Page 1}}&size={{.Response.Size}}" class="page-link">上一页</a>
+                    {{end}}
+                    
+                    <span class="page-current">第 {{.Response.Page}} 页</span>
+                    
+                    {{if lt (mul .Response.Page .Response.Size) .Response.Total}}
+                    <a href="?ip={{.Request.IP}}&port={{.Request.Port}}&banner={{.Request.Banner}}&service={{.Request.Service}}&country={{.Request.Country}}&page={{add .Response.Page 1}}&size={{.Response.Size}}" class="page-link">下一页</a>
+                    {{end}}
+                </div>
+                {{else}}
+                <div class="no-results">
+                    <p>没有找到匹配的结果</p>
+                </div>
+                {{end}}
+
+                <!-- 统计信息 -->
+                {{if .Response.Stats}}
+                <div class="stats-sidebar">
+                    <h3>统计信息</h3>
+                    
+                    {{if .Response.Stats.TopServices}}
+                    <div class="stat-section">
+                        <h4>热门服务</h4>
+                        <ul>
+                            {{range .Response.Stats.TopServices}}
+                            <li>{{.Service}} ({{.Count}})</li>
+                            {{end}}
+                        </ul>
+                    </div>
+                    {{end}}
+
+                    {{if .Response.Stats.TopCountries}}
+                    <div class="stat-section">
+                        <h4>国家分布</h4>
+                        <ul>
+                            {{range .Response.Stats.TopCountries}}
+                            <li>{{.Country}} ({{.Count}})</li>
+                            {{end}}
+                        </ul>
+                    </div>
+                    {{end}}
+
+                    {{if .Response.Stats.PortDistrib}}
+                    <div class="stat-section">
+                        <h4>端口分布</h4>
+                        <ul>
+                            {{range .Response.Stats.PortDistrib}}
+                            <li>{{.Port}} ({{.Count}})</li>
+                            {{end}}
+                        </ul>
+                    </div>
+                    {{end}}
+                </div>
+                {{end}}
+            </div>
+            {{end}}
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2024 CyberStroll. 网络空间测绘平台.</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

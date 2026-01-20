@@ -1,0 +1,23 @@
+# 服务指纹探测配置
+
+# 扫描目标配置
+targets:
+  file: "targets.txt"  # 目标文件路径
+  timeout: 5           # 超时时间（秒）
+  concurrency: 10      # 并发数
+
+# HTTP 请求配置
+http:
+  user_agent: "ServiceFingerprint/1.0"
+  follow_redirects: true
+  max_redirects: 5
+
+# 指纹数据库配置
+fingerprint:
+  file: "fingerprints.yaml"  # 指纹文件路径
+
+# 输出配置
+output:
+  file: "results.csv"        # 结果输出文件
+  format: "csv"              # 输出格式：csv, json, txt
+  verbose: true              # 是否输出详细信息

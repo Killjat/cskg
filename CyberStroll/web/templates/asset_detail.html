@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="logo"><a href="/">CyberStroll</a></h1>
+            <p class="subtitle">资产详情 - {{.IP}}</p>
+        </header>
+
+        <main class="main">
+            <div class="asset-header">
+                <h2>{{.IP}}</h2>
+                {{if .Assets}}
+                <div class="asset-summary">
+                    <span class="summary-item">开放端口: {{len .Assets}}</span>
+                    {{if index .Assets 0}}{{if (index .Assets 0).GeoInfo}}
+                    <span class="summary-item">位置: {{(index .Assets 0).GeoInfo.Country}} {{(index .Assets 0).GeoInfo.City}}</span>
+                    <span class="summary-item">ISP: {{(index .Assets 0).GeoInfo.ISP}}</span>
+                    {{end}}{{end}}
+                </div>
+                {{end}}
+            </div>
+
+            {{if .Assets}}
+            <div class="asset-details">
+                <h3>端口和服务</h3>
+                <div class="ports-grid">
+                    {{range .Assets}}
+                    <div class="port-card">
+                        <div class="port-header">
+                            <span class="port-number">{{.Port}}/{{.Protocol}}</span>
+                            <span class="port-state state-{{.State}}">{{.State}}</span>
+                        </div>
+                        <div class="port-info">
+                            {{if .Service}}
+                            <div class="info-row">
+                                <strong>服务:</strong> {{.Service}}
+                            </div>
+                            {{end}}
+                            {{if .ServiceVersion}}
+                            <div class="info-row">
+                                <strong>版本:</strong> {{.ServiceVersion}}
+                            </div>
+                            {{end}}
+                            {{if .Banner}}
+                            <div class="info-row">
+                                <strong>Banner:</strong>
+                                <pre class="banner-text">{{.Banner}}</pre>
+                            </div>
+                            {{end}}
+                            {{if .Applications}}
+                            <div class="info-row">
+                                <strong>应用:</strong>
+                                {{range .Applications}}
+                                <span class="app-tag">{{.Name}} {{.Version}}</span>
+                                {{end}}
+                            </div>
+                            {{end}}
+                            <div class="info-row">
+                                <strong>扫描时间:</strong> {{.ScanTime.Format "2006-01-02 15:04:05"}}
+                            </div>
+                        </div>
+                    </div>
+                    {{end}}
+                </div>
+
+                <!-- 地理信息 -->
+                {{if index .Assets 0}}{{if (index .Assets 0).GeoInfo}}
+                <div class="geo-section">
+                    <h3>地理信息</h3>
+                    <div class="geo-info">
+                        <div class="geo-row">
+                            <strong>国家:</strong> {{(index .Assets 0).GeoInfo.Country}} ({{(index .Assets 0).GeoInfo.CountryCode}})
+                        </div>
+                        <div class="geo-row">
+                            <strong>地区:</strong> {{(index .Assets 0).GeoInfo.Region}}
+                        </div>
+                        <div class="geo-row">
+                            <strong>城市:</strong> {{(index .Assets 0).GeoInfo.City}}
+                        </div>
+                        <div class="geo-row">
+                            <strong>ISP:</strong> {{(index .Assets 0).GeoInfo.ISP}}
+                        </div>
+                        <div class="geo-row">
+                            <strong>组织:</strong> {{(index .Assets 0).GeoInfo.Organization}}
+                        </div>
+                        {{if and (index .Assets 0).GeoInfo.Latitude (index .Assets 0).GeoInfo.Longitude}}
+                        <div class="geo-row">
+                            <strong>坐标:</strong> {{(index .Assets 0).GeoInfo.Latitude}}, {{(index .Assets 0).GeoInfo.Longitude}}
+                        </div>
+                        {{end}}
+                    </div>
+                </div>
+                {{end}}{{end}}
+
+                <!-- 安全信息 -->
+                {{range .Assets}}
+                {{if .SecurityInfo}}
+                <div class="security-section">
+                    <h3>安全信息</h3>
+                    <div class="security-info">
+                        {{if .SecurityInfo.Vulnerabilities}}
+                        <div class="security-row">
+                            <strong>漏洞:</strong>
+                            <ul>
+                                {{range .SecurityInfo.Vulnerabilities}}
+                                <li class="vuln-item">{{.}}</li>
+                                {{end}}
+                            </ul>
+                        </div>
+                        {{end}}
+                        {{if .SecurityInfo.SSLInfo}}
+                        <div class="security-row">
+                            <strong>SSL信息:</strong>
+                            <div class="ssl-info">
+                                <div>版本: {{.SecurityInfo.SSLInfo.Version}}</div>
+                                <div>加密: {{.SecurityInfo.SSLInfo.Cipher}}</div>
+                            </div>
+                        </div>
+                        {{end}}
+                        {{if .SecurityInfo.Authentication}}
+                        <div class="security-row">
+                            <strong>认证:</strong> {{.SecurityInfo.Authentication}}
+                        </div>
+                        {{end}}
+                    </div>
+                </div>
+                {{end}}
+                {{end}}
+            </div>
+            {{else}}
+            <div class="no-assets">
+                <p>该IP地址暂无扫描数据</p>
+                <a href="/" class="back-link">返回首页</a>
+            </div>
+            {{end}}
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2024 CyberStroll. 网络空间测绘平台.</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

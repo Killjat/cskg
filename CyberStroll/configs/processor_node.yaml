@@ -1,0 +1,48 @@
+# 处理节点配置文件
+
+# 节点配置
+node:
+  id: "processor-node-001"
+  name: "处理节点1"
+  region: "default"
+
+# Kafka配置
+kafka:
+  brokers: ["localhost:9092"]
+  result_topic: "scan_results"
+  group_id: "processors"
+
+# Elasticsearch配置
+elasticsearch:
+  urls: ["http://localhost:9200"]
+  index: "cyberstroll_ip_scan"
+  username: ""
+  password: ""
+  timeout: 30
+
+# 存储配置
+storage:
+  mongodb:
+    uri: "mongodb://cyberstroll:cyberstroll123@localhost:27017/cyberstroll?authSource=admin"
+    database: "cyberstroll"
+    timeout: 10
+
+# 处理器配置
+processor:
+  batch_size: 100
+  batch_timeout: 5
+  max_concurrency: 10
+  retry_count: 3
+  enable_geo_lookup: true
+
+# 日志配置
+logging:
+  level: "debug"
+  file: "logs/processor_node.log"
+  max_size: "100MB"
+  max_backups: 10
+  max_age: 30
+  compress: true
+
+# 调试模式
+debug: true

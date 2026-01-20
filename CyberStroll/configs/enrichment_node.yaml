@@ -1,0 +1,37 @@
+# 富化节点配置文件
+
+# 节点配置
+node:
+  id: "enrichment-node-001"
+  name: "网站数据富化节点1"
+  region: "default"
+
+# Elasticsearch配置
+elasticsearch:
+  urls: ["http://localhost:9200"]
+  index: "cyberstroll_ip_scan"
+  username: ""
+  password: ""
+  timeout: 30
+
+# 富化配置
+enrichment:
+  batch_size: 50
+  worker_count: 5
+  scan_interval: "30s"
+  request_timeout: "30s"
+  max_retries: 3
+  enable_cert: true
+  enable_api: true
+  enable_web_info: true
+  enable_fingerprint: true
+  enable_content: true
+
+# 日志配置
+logging:
+  level: "debug"
+  file: "logs/enrichment_node.log"
+  max_size: "100MB"
+  max_backups: 10
+  max_age: 30
+  compress: true

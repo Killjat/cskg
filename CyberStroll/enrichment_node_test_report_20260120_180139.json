@@ -1,0 +1,87 @@
+{
+  "duration": "1.640579ms",
+  "failed_tests": 0,
+  "feature_coverage": {
+    "api_enrichment": true,
+    "batch_processing": true,
+    "certificate_enrichment": true,
+    "concurrent_processing": true,
+    "content_enrichment": true,
+    "error_handling": true,
+    "fingerprint_detection": true,
+    "website_info": true
+  },
+  "passed_tests": 12,
+  "results": [
+    {
+      "name": "富化器配置测试",
+      "status": "成功",
+      "duration": 16232
+    },
+    {
+      "name": "模拟ES客户端测试",
+      "status": "成功",
+      "duration": 16848
+    },
+    {
+      "name": "Web资产查询测试",
+      "status": "成功",
+      "duration": 18527
+    },
+    {
+      "name": "证书信息富化测试",
+      "status": "成功",
+      "duration": 141117
+    },
+    {
+      "name": "网站内容富化测试",
+      "status": "成功",
+      "duration": 842415
+    },
+    {
+      "name": "指纹识别测试",
+      "status": "成功",
+      "duration": 50282
+    },
+    {
+      "name": "API信息富化测试",
+      "status": "成功",
+      "duration": 45237
+    },
+    {
+      "name": "网站信息富化测试",
+      "status": "成功",
+      "duration": 40234
+    },
+    {
+      "name": "批量处理测试",
+      "status": "成功",
+      "duration": 36910
+    },
+    {
+      "name": "错误处理测试",
+      "status": "成功",
+      "duration": 19825
+    },
+    {
+      "name": "统计功能测试",
+      "status": "成功",
+      "duration": 9171
+    },
+    {
+      "name": "并发处理测试",
+      "status": "成功",
+      "duration": 34306
+    }
+  ],
+  "success_rate": 100,
+  "system_info": {
+    "go_version": "1.21+",
+    "node_type": "enrichment_node",
+    "test_env": "unit_test",
+    "version": "1.0.0"
+  },
+  "test_type": "enrichment_node",
+  "timestamp": "2026-01-20T18:01:39+08:00",
+  "total_tests": 12
+}

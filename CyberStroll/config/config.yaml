@@ -8,7 +8,7 @@ system:
 
 # Kafka 配置
 kafka:
-  brokers: ["192.168.1.11:9093"]
+  brokers: ["localhost:9092"]
   group_id: "cyberstroll_scan_group"
   topics:
     system_task: "system_task"
@@ -24,12 +24,18 @@ kafka:
 
 # Elasticsearch 配置
 elasticsearch:
-  addresses: ["http://192.168.1.11:9200"]
+  addresses: ["http://localhost:9200"]
   username: ""
   password: ""
   index:
-    scan_result: "scan_result"
+    scan_result: "cyberstroll_ip_scan"
   timeout: "30s"
+
+# MongoDB 配置
+mongodb:
+  uri: "mongodb://cyberstroll:cyberstroll123@localhost:27017/cyberstroll?authSource=admin"
+  database: "cyberstroll"
+  timeout: 10
 
 # 扫描配置
 scan:

@@ -1,0 +1,6 @@
+# 扫描目标列表
+# 格式：http(s)://domain:port 或 IP:port
+
+http://localhost:5001/
+http://example.com
+https://github.com

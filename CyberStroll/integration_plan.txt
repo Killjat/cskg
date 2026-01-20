@@ -1,0 +1,528 @@
+CyberStroll 扫描节点集成方案
+================================================================
+
+基于CSKG现有模块的集成架构设计
+
+================================================================
+1. 核心模块复用映射
+================================================================
+
+1.1 端口扫描模块
+复用模块: cskg/network_probe/
+核心文件:
+- engine.go -> CyberStroll/internal/scanner/probe_engine.go
+- types.go -> CyberStroll/internal/scanner/types.go
+- parsers.go -> CyberStroll/internal/scanner/parsers.go
+
+集成方式:
+```go
+// 在扫描节点中使用
+probeEngine := NewProbeEngine(config)
+result := probeEngine.ProbeTarget(target, port)
+```
+
+1.2 应用识别模块
+复用模块: cskg/servicefingerprint/
+集成方式: 通过CGO或HTTP API调用Python模块
+```go
+// 调用Python指纹识别
+fingerprintResult := callPythonFingerprint(url)
+```
+
+1.3 规则引擎模块
+复用模块: cskg/rule_engine/
+核心文件:
+- engine.go -> CyberStroll/internal/rules/banner_engine.go
+- types.go -> CyberStroll/internal/rules/types.go
+
+1.4 脚本引擎模块
+复用模块: cskg/script_engine/
+用于协议特定检测和漏洞扫描
+
+1.5 任务管理框架
+复用模块: cskg/assetdiscovery/
+参考其任务定义和消息格式
+
+================================================================
+2. 扫描节点架构设计
+================================================================
+
+2.1 目录结构
+```
+CyberStroll/
+├── cmd/
+│   ├── task_manager/          # 任务管理节点
+│   ├── scan_node/             # 扫描节点
+│   ├── processor_node/        # 处理节点
+│   └── search_node/           # 搜索节点
+├── internal/
+│   ├── scanner/               # 扫描引擎 (复用network_probe)
+│   │   ├── probe_engine.go
+│   │   ├── types.go
+│   │   └── parsers.go
+│   ├── fingerprint/           # 指纹识别 (复用servicefingerprint)
+│   │   ├── service_detector.go
+│   │   └── python_bridge.go
+│   ├── rules/                 # 规则引擎 (复用rule_engine)
+│   │   ├── banner_engine.go
+│   │   └── types.go
+│   ├── scripts/               # 脚本引擎 (复用script_engine)
+│   │   ├── script_engine.go
+│   │   └── builtin_scripts.go
+│   ├── kafka/                 # Kafka客户端
+│   │   ├── consumer.go
+│   │   └── producer.go
+│   ├── storage/               # 存储层
+│   │   ├── mongodb.go
+│   │   └── elasticsearch.go
+│   ├── state/                 # 状态管理
+│   │   └── task_state.go
+│   └── config/                # 配置管理
+│       └── config.go
+├── pkg/
+│   ├── models/                # 数据模型
+│   └── utils/                 # 工具函数
+├── web/                       # Web界面
+├── configs/                   # 配置文件
+└── scripts/                   # 部署脚本
+```
+
+2.2 扫描节点核心组件
+```go
+// ScanNode 扫描节点主结构
+type ScanNode struct {
+    config        *Config
+    kafkaConsumer *kafka.Consumer
+    kafkaProducer *kafka.Producer
+    probeEngine   *scanner.ProbeEngine
+    ruleEngine    *rules.BannerEngine
+    scriptEngine  *scripts.ScriptEngine
+    fingerprinter *fingerprint.ServiceDetector
+    stateManager  *state.TaskStateManager
+    logger        *log.Logger
+}
+
+// 扫描流程
+func (sn *ScanNode) ProcessTask(task *Task) error {
+    // 1. 端口扫描
+    probeResult := sn.probeEngine.ProbeTarget(task.IP, task.Ports)
+    
+    // 2. 应用识别
+    if task.Type == "app_identification" {
+        appInfo := sn.fingerprinter.IdentifyService(probeResult)
+        probeResult.Applications = appInfo
+    }
+    
+    // 3. 规则匹配
+    serviceInfo := sn.ruleEngine.MatchBanner(probeResult.Banner)
+    probeResult.ParsedInfo = serviceInfo
+    
+    // 4. 脚本执行
+    if task.EnableScripts {
+        scriptResult := sn.scriptEngine.ExecuteScripts(probeResult)
+        probeResult.ScriptResults = scriptResult
+    }
+    
+    // 5. 发送结果
+    return sn.kafkaProducer.SendResult(probeResult)
+}
+```
+
+================================================================
+3. 具体集成实现
+================================================================
+
+3.1 ProbeEngine集成
+```go
+// internal/scanner/probe_engine.go
+package scanner
+
+import (
+    // 直接复用network_probe的代码
+    "github.com/cskg/network_probe"
+)
+
+type ProbeEngine struct {
+    engine *networkprobe.ProbeEngine
+    config *ProbeConfig
+}
+
+func NewProbeEngine(config *ProbeConfig) *ProbeEngine {
+    return &ProbeEngine{
+        engine: networkprobe.NewProbeEngine(config.ToNetworkProbeConfig()),
+        config: config,
+    }
+}
+
+func (pe *ProbeEngine) ScanTarget(ip string, ports []int) *ScanResult {
+    results := make([]*PortResult, 0)
+    
+    for _, port := range ports {
+        target := &networkprobe.Target{
+            Host: ip,
+            Port: port,
+        }
+        
+        probeResult := pe.engine.ProbeTarget(target)
+        
+        portResult := &PortResult{
+            Port:        port,
+            Protocol:    probeResult.Protocol,
+            Service:     probeResult.ParsedInfo.Service,
+            Version:     probeResult.ParsedInfo.Version,
+            Banner:      probeResult.Banner,
+            State:       "open",
+            ResponseTime: probeResult.Duration.Milliseconds(),
+        }
+        
+        results = append(results, portResult)
+    }
+    
+    return &ScanResult{
+        IP:          ip,
+        OpenPorts:   results,
+        ScanTime:    time.Now(),
+        ScanStatus:  "success",
+    }
+}
+```
+
+3.2 ServiceDetector集成
+```go
+// internal/fingerprint/service_detector.go
+package fingerprint
+
+import (
+    "os/exec"
+    "encoding/json"
+)
+
+type ServiceDetector struct {
+    pythonPath string
+    scriptPath string
+}
+
+func NewServiceDetector(config *FingerprintConfig) *ServiceDetector {
+    return &ServiceDetector{
+        pythonPath: config.PythonPath,
+        scriptPath: config.ScriptPath,
+    }
+}
+
+func (sd *ServiceDetector) IdentifyService(url string) (*ApplicationInfo, error) {
+    // 调用Python指纹识别脚本
+    cmd := exec.Command(sd.pythonPath, sd.scriptPath, "--target", url, "--format", "json")
+    output, err := cmd.Output()
+    if err != nil {
+        return nil, err
+    }
+    
+    var result struct {
+        Applications []struct {
+            Name       string `json:"name"`
+            Version    string `json:"version"`
+            Category   string `json:"category"`
+            Confidence int    `json:"confidence"`
+        } `json:"applications"`
+    }
+    
+    if err := json.Unmarshal(output, &result); err != nil {
+        return nil, err
+    }
+    
+    apps := make([]*Application, 0)
+    for _, app := range result.Applications {
+        apps = append(apps, &Application{
+            Name:       app.Name,
+            Version:    app.Version,
+            Category:   app.Category,
+            Confidence: app.Confidence,
+        })
+    }
+    
+    return &ApplicationInfo{
+        Applications: apps,
+    }, nil
+}
+```
+
+3.3 Kafka集成
+```go
+// internal/kafka/consumer.go
+package kafka
+
+import (
+    "context"
+    "encoding/json"
+    "github.com/segmentio/kafka-go"
+)
+
+type TaskConsumer struct {
+    reader *kafka.Reader
+    config *KafkaConfig
+}
+
+func NewTaskConsumer(config *KafkaConfig) *TaskConsumer {
+    reader := kafka.NewReader(kafka.ReaderConfig{
+        Brokers: config.Brokers,
+        Topic:   config.TaskTopic,
+        GroupID: config.GroupID,
+    })
+    
+    return &TaskConsumer{
+        reader: reader,
+        config: config,
+    }
+}
+
+func (tc *TaskConsumer) ConsumeTask(ctx context.Context) (*Task, error) {
+    message, err := tc.reader.ReadMessage(ctx)
+    if err != nil {
+        return nil, err
+    }
+    
+    var task Task
+    if err := json.Unmarshal(message.Value, &task); err != nil {
+        return nil, err
+    }
+    
+    return &task, nil
+}
+
+// internal/kafka/producer.go
+type ResultProducer struct {
+    writer *kafka.Writer
+    config *KafkaConfig
+}
+
+func NewResultProducer(config *KafkaConfig) *ResultProducer {
+    writer := kafka.NewWriter(kafka.WriterConfig{
+        Brokers: config.Brokers,
+        Topic:   config.ResultTopic,
+    })
+    
+    return &ResultProducer{
+        writer: writer,
+        config: config,
+    }
+}
+
+func (rp *ResultProducer) SendResult(result *ScanResult) error {
+    data, err := json.Marshal(result)
+    if err != nil {
+        return err
+    }
+    
+    return rp.writer.WriteMessages(context.Background(),
+        kafka.Message{
+            Key:   []byte(result.IP),
+            Value: data,
+        },
+    )
+}
+```
+
+================================================================
+4. 配置文件设计
+================================================================
+
+4.1 扫描节点配置 (configs/scan_node.yaml)
+```yaml
+# 节点基本信息
+node:
+  id: "scan-node-001"
+  name: "扫描节点1"
+  region: "beijing"
+  
+# Kafka配置
+kafka:
+  brokers: ["localhost:9092"]
+  system_task_topic: "system_tasks"
+  regular_task_topic: "regular_tasks"
+  result_topic: "scan_results"
+  group_id: "scan_nodes"
+  
+# 扫描配置
+scanner:
+  max_concurrency: 100
+  timeout: 10s
+  retry_count: 3
+  probe_delay: 100ms
+  
+# 指纹识别配置
+fingerprint:
+  python_path: "/usr/bin/python3"
+  script_path: "../servicefingerprint/main.py"
+  config_path: "../servicefingerprint/config.yaml"
+  
+# 规则引擎配置
+rules:
+  rules_file: "configs/banner_rules.yaml"
+  cache_size: 10000
+  cache_ttl: 3600s
+  
+# 脚本引擎配置
+scripts:
+  enabled: true
+  timeout: 30s
+  concurrent: 5
+  
+# 存储配置
+storage:
+  mongodb:
+    uri: "mongodb://localhost:27017"
+    database: "cyberstroll"
+  elasticsearch:
+    urls: ["http://localhost:9200"]
+    index: "cyberstroll_ip_scan"
+    
+# 日志配置
+logging:
+  level: "info"
+  file: "logs/scan_node.log"
+  max_size: 100MB
+  max_backups: 10
+```
+
+================================================================
+5. 部署脚本
+================================================================
+
+5.1 构建脚本 (scripts/build.sh)
+```bash
+#!/bin/bash
+
+echo "构建CyberStroll扫描节点..."
+
+# 复制依赖模块
+echo "复制network_probe模块..."
+cp -r ../network_probe internal/scanner/network_probe
+
+echo "复制rule_engine模块..."
+cp -r ../rule_engine internal/rules/rule_engine
+
+echo "复制script_engine模块..."
+cp -r ../scripts internal/scripts/script_engine
+
+echo "复制servicefingerprint模块..."
+cp -r ../servicefingerprint internal/fingerprint/servicefingerprint
+
+# 构建Go程序
+echo "构建扫描节点..."
+go build -o bin/scan_node cmd/scan_node/main.go
+
+echo "构建任务管理节点..."
+go build -o bin/task_manager cmd/task_manager/main.go
+
+echo "构建处理节点..."
+go build -o bin/processor_node cmd/processor_node/main.go
+
+echo "构建搜索节点..."
+go build -o bin/search_node cmd/search_node/main.go
+
+echo "构建完成!"
+```
+
+5.2 启动脚本 (scripts/start_scan_node.sh)
+```bash
+#!/bin/bash
+
+# 检查依赖
+echo "检查依赖..."
+if ! command -v python3 &> /dev/null; then
+    echo "Python3 未安装"
+    exit 1
+fi
+
+if ! command -v kafka-topics.sh &> /dev/null; then
+    echo "Kafka 未安装"
+    exit 1
+fi
+
+# 创建Kafka主题
+echo "创建Kafka主题..."
+kafka-topics.sh --create --topic system_tasks --bootstrap-server localhost:9092 --partitions 3 --replication-factor 1
+kafka-topics.sh --create --topic regular_tasks --bootstrap-server localhost:9092 --partitions 3 --replication-factor 1
+kafka-topics.sh --create --topic scan_results --bootstrap-server localhost:9092 --partitions 3 --replication-factor 1
+
+# 启动扫描节点
+echo "启动扫描节点..."
+./bin/scan_node --config configs/scan_node.yaml
+```
+
+================================================================
+6. 测试方案
+================================================================
+
+6.1 单元测试
+```go
+// internal/scanner/probe_engine_test.go
+func TestProbeEngine_ScanTarget(t *testing.T) {
+    config := &ProbeConfig{
+        Timeout:        10 * time.Second,
+        MaxConcurrency: 10,
+    }
+    
+    engine := NewProbeEngine(config)
+    result := engine.ScanTarget("127.0.0.1", []int{22, 80, 443})
+    
+    assert.NotNil(t, result)
+    assert.Equal(t, "127.0.0.1", result.IP)
+    assert.Equal(t, "success", result.ScanStatus)
+}
+```
+
+6.2 集成测试
+```bash
+# 测试完整扫描流程
+./bin/scan_node --test-mode --target 192.168.1.1 --ports 22,80,443
+```
+
+================================================================
+7. 性能优化
+================================================================
+
+7.1 并发控制
+- 使用worker pool模式
+- 限制并发扫描数量
+- 实现背压机制
+
+7.2 缓存策略
+- 缓存DNS解析结果
+- 缓存指纹识别结果
+- 缓存规则匹配结果
+
+7.3 资源管理
+- 连接池复用
+- 内存使用监控
+- 垃圾回收优化
+
+================================================================
+8. 监控和告警
+================================================================
+
+8.1 指标收集
+- 扫描速度 (scans/second)
+- 成功率 (success_rate)
+- 错误率 (error_rate)
+- 资源使用率 (cpu/memory)
+
+8.2 健康检查
+- HTTP健康检查端点
+- Kafka连接状态
+- 数据库连接状态
+
+================================================================
+总结
+================================================================
+
+通过复用CSKG现有模块，CyberStroll可以快速构建出功能完整的分布式扫描系统：
+
+1. 端口扫描: 复用network_probe的ProbeEngine
+2. 应用识别: 集成servicefingerprint的Python模块
+3. 规则匹配: 复用rule_engine的BannerEngine
+4. 脚本执行: 复用script_engine的ScriptEngine
+5. 任务管理: 参考assetdiscovery的架构设计
+
+这种设计既避免了重复造轮子，又保证了系统的稳定性和功能完整性。
+================================================================

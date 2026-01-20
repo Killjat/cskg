@@ -1,0 +1,314 @@
+CyberStroll 任务状态管理设计
+================================================================
+
+1. 任务状态定义
+================================================================
+
+1.1 主任务状态 (Task Status)
+- CREATED: 任务已创建，等待分发
+- QUEUED: 任务已加入队列，等待执行
+- RUNNING: 任务正在执行中
+- PAUSED: 任务已暂停
+- COMPLETED: 任务已完成
+- FAILED: 任务执行失败
+- CANCELLED: 任务已取消
+- TIMEOUT: 任务执行超时
+
+1.2 子任务状态 (SubTask Status - 单个IP的扫描状态)
+- PENDING: 等待扫描
+- ASSIGNED: 已分配给扫描节点
+- SCANNING: 正在扫描
+- COMPLETED: 扫描完成
+- FAILED: 扫描失败
+- TIMEOUT: 扫描超时
+- RETRYING: 正在重试
+
+================================================================
+2. 状态转换规则
+================================================================
+
+2.1 主任务状态转换图
+CREATED → QUEUED → RUNNING → COMPLETED
+    ↓         ↓        ↓         ↑
+CANCELLED  CANCELLED  PAUSED → RUNNING
+                      ↓
+                   FAILED/TIMEOUT
+
+2.2 子任务状态转换图
+PENDING → ASSIGNED → SCANNING → COMPLETED
+    ↓        ↓          ↓
+CANCELLED FAILED    FAILED → RETRYING → SCANNING
+                     ↓
+                  TIMEOUT
+
+================================================================
+3. MongoDB 任务状态管理表结构
+================================================================
+
+3.1 主任务表 (tasks) - 更新版
+{
+  "_id": "ObjectId",
+  "task_id": "string",
+  "task_initiator": "string",
+  "task_target": "string",
+  "task_type": "string",
+  "task_category": "string",
+  
+  // 状态管理
+  "status": "string",                     // 主任务状态
+  "status_history": [                     // 状态变更历史
+    {
+      "status": "string",
+      "timestamp": "ISODate",
+      "reason": "string",                 // 状态变更原因
+      "operator": "string"                // 操作者
+    }
+  ],
+  
+  // 进度统计
+  "progress": {
+    "total_targets": "number",            // 总目标数
+    "pending_count": "number",            // 等待中
+    "assigned_count": "number",           // 已分配
+    "scanning_count": "number",           // 扫描中
+    "completed_count": "number",          // 已完成
+    "failed_count": "number",             // 失败数
+    "timeout_count": "number",            // 超时数
+    "retry_count": "number",              // 重试数
+    "progress_percentage": "number"       // 完成百分比
+  },
+  
+  // 时间管理
+  "created_time": "ISODate",
+  "queued_time": "ISODate",
+  "started_time": "ISODate",
+  "completed_time": "ISODate",
+  "estimated_completion": "ISODate",      // 预估完成时间
+  "actual_duration": "number",            // 实际执行时长(秒)
+  
+  // 配置和控制
+  "config": {
+    "max_retries": "number",              // 最大重试次数
+    "retry_delay": "number",              // 重试延迟(秒)
+    "timeout": "number",                  // 任务超时时间(秒)
+    "priority": "number"                  // 任务优先级
+  },
+  
+  // 错误处理
+  "error_info": {
+    "error_count": "number",              // 错误次数
+    "last_error": "string",               // 最后错误信息
+    "error_threshold": "number"           // 错误阈值
+  }
+}
+
+3.2 子任务表 (subtasks) - 单个IP的扫描任务
+{
+  "_id": "ObjectId",
+  "task_id": "string",                    // 关联主任务ID
+  "subtask_id": "string",                 // 子任务唯一ID
+  "ip": "string",                         // 目标IP
+  "status": "string",                     // 子任务状态
+  
+  // 执行信息
+  "assigned_node": "string",              // 分配的扫描节点
+  "assigned_time": "ISODate",             // 分配时间
+  "started_time": "ISODate",              // 开始扫描时间
+  "completed_time": "ISODate",            // 完成时间
+  "execution_duration": "number",         // 执行时长(秒)
+  
+  // 重试机制
+  "retry_count": "number",                // 当前重试次数
+  "max_retries": "number",                // 最大重试次数
+  "last_retry_time": "ISODate",           // 最后重试时间
+  "next_retry_time": "ISODate",           // 下次重试时间
+  
+  // 结果信息
+  "scan_result": {
+    "open_ports": ["number"],
+    "services": ["string"],
+    "response_time": "number"
+  },
+  
+  // 错误信息
+  "error_info": {
+    "error_message": "string",
+    "error_code": "string",
+    "error_time": "ISODate"
+  },
+  
+  "created_time": "ISODate",
+  "updated_time": "ISODate"
+}
+
+================================================================
+4. 状态管理服务设计
+================================================================
+
+4.1 TaskStateManager 接口
+```go
+type TaskStateManager interface {
+    // 主任务状态管理
+    CreateTask(task *Task) error
+    UpdateTaskStatus(taskID string, status TaskStatus, reason string) error
+    GetTaskStatus(taskID string) (*TaskStatus, error)
+    GetTaskProgress(taskID string) (*TaskProgress, error)
+    
+    // 子任务状态管理
+    CreateSubTasks(taskID string, targets []string) error
+    AssignSubTask(subtaskID string, nodeID string) error
+    UpdateSubTaskStatus(subtaskID string, status SubTaskStatus) error
+    RetrySubTask(subtaskID string) error
+    
+    // 批量操作
+    BatchUpdateSubTasks(updates []SubTaskUpdate) error
+    GetPendingSubTasks(nodeID string, limit int) ([]*SubTask, error)
+    
+    // 监控和统计
+    CalculateTaskProgress(taskID string) (*TaskProgress, error)
+    GetTaskStatistics(taskID string) (*TaskStatistics, error)
+    CleanupExpiredTasks(expireDays int) error
+}
+```
+
+4.2 状态更新策略
+- 异步更新：使用消息队列异步更新状态，避免阻塞扫描节点
+- 批量更新：定期批量更新子任务状态，提高性能
+- 状态校验：每次状态变更都进行合法性校验
+- 幂等性：支持重复状态更新，确保数据一致性
+
+================================================================
+5. 状态同步机制
+================================================================
+
+5.1 心跳机制
+```json
+// 扫描节点心跳消息
+{
+  "node_id": "string",
+  "timestamp": "number",
+  "status": "online|offline|busy",
+  "current_tasks": [
+    {
+      "subtask_id": "string",
+      "status": "scanning",
+      "progress": "number"
+    }
+  ],
+  "system_info": {
+    "cpu_usage": "number",
+    "memory_usage": "number",
+    "active_threads": "number"
+  }
+}
+```
+
+5.2 状态恢复机制
+- 节点重启后自动恢复未完成的任务
+- 定期检查超时任务并重新分配
+- 检测僵尸任务并进行清理
+
+================================================================
+6. 异常处理策略
+================================================================
+
+6.1 任务超时处理
+- 设置任务级别超时：整个任务的最大执行时间
+- 设置子任务超时：单个IP扫描的最大时间
+- 超时后自动重试或标记失败
+
+6.2 节点故障处理
+- 节点离线检测：超过心跳间隔未收到心跳
+- 任务重新分配：将故障节点的任务重新分配给其他节点
+- 故障恢复：节点恢复后重新加入任务分配
+
+6.3 重试策略
+- 指数退避：重试间隔逐渐增加
+- 最大重试次数：避免无限重试
+- 重试条件：只对特定错误类型进行重试
+
+================================================================
+7. 状态监控和告警
+================================================================
+
+7.1 监控指标
+- 任务完成率：completed_count / total_count
+- 任务失败率：failed_count / total_count
+- 平均执行时间：sum(execution_duration) / completed_count
+- 节点利用率：active_tasks / max_capacity
+
+7.2 告警规则
+- 任务失败率超过阈值
+- 任务执行时间超过预期
+- 节点长时间无响应
+- 队列积压严重
+
+================================================================
+8. 状态查询API设计
+================================================================
+
+8.1 任务状态查询
+GET /api/tasks/{task_id}/status
+Response:
+{
+  "task_id": "string",
+  "status": "string",
+  "progress": {
+    "percentage": "number",
+    "completed": "number",
+    "total": "number",
+    "estimated_remaining": "number"
+  },
+  "timeline": [
+    {
+      "status": "string",
+      "timestamp": "string",
+      "duration": "number"
+    }
+  ]
+}
+
+8.2 实时进度推送
+WebSocket: /ws/tasks/{task_id}/progress
+Message:
+{
+  "type": "progress_update",
+  "task_id": "string",
+  "progress": "number",
+  "status": "string",
+  "timestamp": "string"
+}
+
+================================================================
+9. 性能优化策略
+================================================================
+
+9.1 数据库优化
+- 为task_id、status、created_time创建复合索引
+- 使用分片策略分散热点数据
+- 定期清理历史数据
+
+9.2 缓存策略
+- Redis缓存活跃任务状态
+- 缓存任务进度信息
+- 使用发布订阅模式推送状态更新
+
+9.3 批量处理
+- 批量更新子任务状态
+- 批量计算任务进度
+- 异步处理状态变更
+
+================================================================
+10. 状态管理最佳实践
+================================================================
+
+1. 状态变更原子性：使用事务确保状态变更的原子性
+2. 状态一致性：定期校验主任务和子任务状态的一致性
+3. 状态历史：保留完整的状态变更历史用于审计
+4. 幂等操作：所有状态更新操作都应该是幂等的
+5. 异步处理：状态更新不应该阻塞业务流程
+6. 监控告警：建立完善的监控和告警机制
+7. 优雅降级：在系统负载过高时优雅降级服务
+8. 数据清理：定期清理过期的任务和状态数据
+
+================================================================

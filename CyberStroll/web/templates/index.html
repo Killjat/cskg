@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="logo">CyberStroll</h1>
+            <p class="subtitle">网络空间搜索引擎</p>
+        </header>
+
+        <main class="main">
+            <div class="search-box">
+                <form action="/search" method="GET" class="search-form">
+                    <div class="search-row">
+                        <input type="text" name="ip" placeholder="IP地址 (如: 192.168.1.1 或 192.168.1.0/24)" class="search-input">
+                        <input type="text" name="port" placeholder="端口 (如: 80 或 80-443)" class="search-input">
+                    </div>
+                    <div class="search-row">
+                        <input type="text" name="banner" placeholder="Banner关键词" class="search-input">
+                        <input type="text" name="service" placeholder="服务类型 (如: http, ssh)" class="search-input">
+                    </div>
+                    <div class="search-row">
+                        <input type="text" name="country" placeholder="国家/地区" class="search-input">
+                        <button type="submit" class="search-button">搜索</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="stats-section">
+                <h2>系统统计</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>总扫描主机</h3>
+                        <p class="stat-number" id="total-hosts">-</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>开放端口</h3>
+                        <p class="stat-number" id="total-ports">-</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>识别服务</h3>
+                        <p class="stat-number" id="total-services">-</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>最近更新</h3>
+                        <p class="stat-number" id="last-update">-</p>
+                    </div>
+                </div>
+            </div>
+
+            {{if .RecentScans}}
+            <div class="recent-section">
+                <h2>最近扫描</h2>
+                <div class="results-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>IP地址</th>
+                                <th>端口</th>
+                                <th>服务</th>
+                                <th>Banner</th>
+                                <th>扫描时间</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{range .RecentScans}}
+                            <tr>
+                                <td><a href="/asset/{{.IP}}">{{.IP}}</a></td>
+                                <td>{{.Port}}</td>
+                                <td>{{.Service}}</td>
+                                <td class="banner-cell">{{.Banner}}</td>
+                                <td>{{.ScanTime.Format "2006-01-02 15:04:05"}}</td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {{end}}
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2024 CyberStroll. 网络空间测绘平台.</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
